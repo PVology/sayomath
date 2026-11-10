@@ -5,7 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Saif Math</title>
 <meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Saif Math: learn and master the times tables and division.">
 <link rel="icon" type="image/svg+xml" href="logo/favicon.svg">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="theme-color" content="#1C6FD1">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Saif Math">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap">
 <style>
@@ -164,14 +171,86 @@ table.mastery{border-collapse:separate;border-spacing:3px;margin:0 auto;font-var
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 body{margin:0}
+
+/* Header chips: player, day streak */
+.hdr-r{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.chip{display:flex;align-items:center;gap:8px;border:2px solid var(--line);background:var(--card);padding:3px 12px 3px 3px;border-radius:999px;font-weight:800;max-width:180px}
+.chip span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.av{width:30px;height:30px;flex:none;border-radius:50%;display:grid;place-items:center;color:#fff;font-family:var(--display);font-weight:700;font-size:16px;line-height:1}
+.fire{display:flex;align-items:center;gap:4px;background:#FFE6D6;border:2px solid #F07B3F;padding:4px 12px;border-radius:999px;font-weight:800;font-variant-numeric:tabular-nums;color:#7A2E06}
+.fire svg{width:18px;height:18px;fill:#F07B3F}
+.fire.cold{background:var(--paper);border-color:var(--line);color:var(--muted)}
+.fire.cold svg{fill:var(--muted)}
+
+/* Segmented choice */
+.seg{display:inline-flex;flex-wrap:wrap;background:var(--paper);border:2px solid var(--line);border-radius:14px;padding:4px;gap:4px;align-self:flex-start}
+.seg button{border:0;background:transparent;border-radius:10px;padding:7px 14px;font-family:var(--display);font-weight:600;font-size:16px;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.controls{display:flex;flex-direction:column;gap:12px}
+
+/* Players */
+.plist{display:flex;flex-wrap:wrap;gap:10px}
+.pbtn{display:flex;align-items:center;gap:10px;border:2px solid var(--line);background:var(--paper);border-radius:16px;padding:8px 16px 8px 8px;text-align:left;font-weight:800}
+.pbtn .av{width:38px;height:38px;font-size:19px}
+.pbtn small{display:block;color:var(--muted);font-weight:700}
+.pbtn[aria-current="true"]{border-color:var(--accent);background:var(--card);box-shadow:0 0 0 2px var(--accent)}
+.txt{font:inherit;border:2px solid var(--line);border-radius:12px;padding:8px 12px;background:var(--paper);color:var(--ink);min-width:0;flex:1 1 160px}
+.lbl2{font-weight:800;font-size:14px;color:var(--muted);margin:0}
+
+/* Badges */
+h3{font-size:20px}
+.tbadges{display:grid;grid-template-columns:repeat(12,1fr);gap:6px}
+.tb{aspect-ratio:1;border-radius:50%;display:grid;place-items:center;font-family:var(--display);font-weight:700;font-size:14px;background:var(--paper);color:var(--muted);border:2px dashed var(--line)}
+.tb.got{background:var(--good);color:#fff;border:2px solid var(--good)}
+.badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}
+.badge{display:flex;gap:10px;align-items:center;background:var(--paper);border-radius:14px;padding:10px;border:2px solid transparent}
+.badge .ic,.toast .ic{width:42px;height:42px;flex:none;border-radius:50%;display:grid;place-items:center;font-size:22px;background:var(--sun-soft);font-family:var(--display);font-weight:700}
+.badge b{display:block;font-family:var(--display);font-weight:600;line-height:1.2}
+.badge span{display:block;font-size:13px;color:var(--muted);font-weight:700;line-height:1.3}
+.badge.got{border-color:var(--sun);background:var(--card)}
+.badge.locked .ic{filter:grayscale(1);opacity:.45;background:var(--line)}
+.badge.locked b{color:var(--muted)}
+
+/* Toast */
+.toast{position:fixed;left:50%;top:max(12px,env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:20;background:var(--card);color:var(--ink);border:2px solid var(--sun);border-radius:18px;padding:8px 16px 8px 8px;display:flex;gap:12px;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,.22);width:max-content;max-width:calc(100vw - 32px)}
+.toast b{display:block;font-family:var(--display);font-weight:600}
+.toast small{display:block;color:var(--muted);font-weight:700}
+.toast.in{animation:toastIn .4s both}
+@keyframes toastIn{from{transform:translate(-50%,-24px) scale(.9);opacity:0}to{transform:translate(-50%,0);opacity:1}}
+@media (max-width:640px){
+  .tbadges{grid-template-columns:repeat(6,1fr)}
+  .logo{font-size:24px}.logo .mark{width:52px;height:40px}
+  .seg button{padding:6px 10px;font-size:15px}
+}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
     <div class="logo"><img class="mark" src="logo/saifmath-icon.svg" alt="" width="62" height="48"><span><span class="w1">Saif </span><span class="w2">Math</span></span></div>
-    <div class="stars" title="Stars earned"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/></svg><span id="starCount">0</span></div>
+    <div class="hdr-r">
+      <button class="chip" id="plChip" title="Change player"><span class="av" id="plAv"></span><span id="plNm"></span></button>
+      <div class="fire" id="dayChip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.48 12.35c-1.57-4.08-7.16-4.3-5.81-10.23.1-.44-.37-.78-.75-.55C9.29 3.71 6.68 8 8.87 13.62c.18.46-.36.89-.75.59-1.81-1.37-2-3.34-1.84-4.75.06-.52-.62-.77-.91-.34C4.69 10.16 4 11.84 4 14.37c.38 5.6 5.11 7.32 6.81 7.54 2.43.31 5.06-.14 6.95-1.87 2.08-1.93 2.84-5.01 1.72-7.69z"/></svg><span id="dayCount">0</span><span class="sr" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">day streak</span></div>
+      <div class="stars" title="Stars earned"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/></svg><span id="starCount">0</span></div>
+      <button class="btn small" id="installBtn" hidden>Install app</button>
+    </div>
   </header>
+
+  <!-- PLAYERS -->
+  <section id="players" class="card" hidden aria-labelledby="plTitle">
+    <div class="row between">
+      <div><h2 id="plTitle">Who is playing?</h2><p class="sub">Each player has their own stars, badges and progress on this device.</p></div>
+      <button class="btn ghost small" id="plClose">Done</button>
+    </div>
+    <div class="plist" id="plList"></div>
+    <div class="controls">
+      <p class="lbl2">Add a new player</p>
+      <div class="row"><input class="txt" id="plNew" maxlength="20" placeholder="Name" aria-label="New player's name"><button class="btn small" id="plAdd">Add player</button></div>
+      <p class="lbl2" id="plNameLbl">Change this player's name</p>
+      <div class="row"><input class="txt" id="plName" maxlength="20" aria-labelledby="plNameLbl"><button class="btn ghost small" id="plRename">Save name</button><button class="btn ghost small" id="plDel">Remove player</button></div>
+      <div class="confirm" id="plDelConfirm" hidden><span id="plDelMsg"></span><button class="btn small" id="plDelYes" style="background:var(--bad)">Yes, remove</button><button class="btn ghost small" id="plDelNo">Keep</button></div>
+    </div>
+  </section>
 
   <nav role="tablist" aria-label="Sections">
     <button role="tab" data-view="learn" aria-selected="true">Learn</button>
@@ -200,6 +279,7 @@ body{margin:0}
       <div class="skip" id="lSkip"></div>
     </div>
     <div class="tip"><span class="t" id="lTipT">×4 trick</span><p id="lTip"></p></div>
+    <div class="tip"><span class="t">÷ backwards</span><p id="lDiv"></p></div>
     <div class="row" style="justify-content:center">
       <button class="btn ghost" id="flip">Flip it around</button>
       <button class="btn" id="practiceThis">Practice the ×<span id="ptN">4</span> table</button>
@@ -209,13 +289,16 @@ body{margin:0}
   <!-- PRACTICE -->
   <section id="v-practice" class="card" hidden>
     <div class="row between">
-      <div><h2>Practice</h2><p class="sub">Pick the tables to work on. Questions you miss come back more often.</p></div>
+      <div><h2>Practice</h2><p class="sub">Pick what to work on. Questions you miss come back more often.</p></div>
       <div class="meter"><span>Streak <b id="pStreak">0</b></span><span>Correct <b id="pRight">0</b></span></div>
     </div>
-    <div class="picker" id="pPicker"></div>
+    <div class="controls">
+      <div class="seg" id="pOps" aria-label="Type of question"></div>
+      <div class="picker" id="pPicker"></div>
+    </div>
     <div class="q-area">
       <div class="q" id="pQ">
-        <div class="problem"><span id="pA">3</span> × <span id="pB">4</span> <span class="eq">=</span> <span class="answer empty" id="pAns">?</span></div>
+        <div class="problem"><span id="pA">3</span> <span id="pOp">×</span> <span id="pB">4</span> <span class="eq">=</span> <span class="answer empty" id="pAns">?</span></div>
         <div class="feedback" id="pFb" aria-live="polite"></div>
         <div class="hint" id="pHint" hidden></div>
       </div>
@@ -226,17 +309,21 @@ body{margin:0}
   <!-- QUIZ -->
   <section id="v-quiz" class="card" hidden>
     <div id="qSetup" style="display:flex;flex-direction:column;gap:16px">
-      <div><h2>Quiz time</h2><p class="sub">10 questions. Answer as fast and as carefully as you can. Each right answer earns a star.</p></div>
-      <div class="picker" id="qPicker"></div>
+      <div><h2 id="qTitle">Quiz time</h2><p class="sub" id="qDesc"></p></div>
+      <div class="controls">
+        <div class="seg" id="qModes" aria-label="Quiz type"></div>
+        <div class="seg" id="qOps" aria-label="Type of question"></div>
+        <div class="picker" id="qPicker"></div>
+      </div>
       <div><button class="btn" id="qStart">Start quiz</button></div>
       <p class="sub" id="qBest"></p>
     </div>
     <div id="qRun" hidden style="display:flex;flex-direction:column;gap:16px">
-      <div class="row between"><div class="meter"><span>Question <b id="qNum">1</b> of 10</span><span>Score <b id="qScore">0</b></span></div><div class="meter"><span>Time <b id="qTime">0s</b></span></div></div>
+      <div class="row between"><div class="meter"><span>Question <b id="qNum">1</b><span id="qOf"> of 10</span></span><span>Score <b id="qScore">0</b></span></div><div class="meter"><span><span id="qTimeLbl">Time</span> <b id="qTime">0s</b></span></div></div>
       <div class="bar"><i id="qBar"></i></div>
       <div class="q-area">
         <div class="q" id="qQ">
-          <div class="problem"><span id="qA">3</span> × <span id="qB">4</span> <span class="eq">=</span> <span class="answer empty" id="qAns">?</span></div>
+          <div class="problem"><span id="qA">3</span> <span id="qOp">×</span> <span id="qB">4</span> <span class="eq">=</span> <span class="answer empty" id="qAns">?</span></div>
           <div class="feedback" id="qFb" aria-live="polite"></div>
         </div>
         <div class="pad" id="qPad"></div>
@@ -244,16 +331,17 @@ body{margin:0}
     </div>
     <div id="qDone" hidden style="display:flex;flex-direction:column;gap:16px;align-items:center;text-align:center">
       <h2 id="qMsg">Great job!</h2>
-      <div class="big-score"><span id="qFinal">0</span>/10</div>
+      <div class="big-score"><span id="qFinal">0</span><span id="qOutOf">/10</span></div>
       <p class="sub" id="qSummary"></p>
       <div id="qMissWrap" style="display:flex;flex-direction:column;gap:8px"><p class="sub">Let's review these:</p><div class="misses" id="qMisses"></div></div>
-      <div class="row" style="justify-content:center"><button class="btn" id="qAgain">Try another quiz</button><button class="btn ghost" id="qToPractice">Go to practice</button></div>
+      <div class="row" style="justify-content:center"><button class="btn" id="qAgain">Play again</button><button class="btn ghost" id="qToPractice">Go to practice</button></div>
     </div>
   </section>
 
   <!-- PROGRESS -->
   <section id="v-progress" class="card" hidden>
-    <div><h2>Your times table map</h2><p class="sub">A fact turns green once you get it right 3 times in a row.</p></div>
+    <div><h2 id="mTitle">Your times table map</h2><p class="sub" id="mSub"></p></div>
+    <div class="seg" id="mOps" aria-label="Which map"></div>
     <div class="stats">
       <div class="stat"><b id="sMastered">0</b><span>facts mastered</span></div>
       <div class="stat"><b id="sAnswered">0</b><span>answers given</span></div>
@@ -261,35 +349,175 @@ body{margin:0}
     </div>
     <div class="legend"><span><i></i>Not tried</span><span><i style="background:var(--bad-soft)"></i>Needs work</span><span><i style="background:var(--sun-soft)"></i>Getting there</span><span><i style="background:var(--good)"></i>Mastered</span></div>
     <div class="grid-wrap"><table class="mastery" id="mGrid"></table></div>
+
+    <div><h3>Badges</h3><p class="sub" id="bCount"></p></div>
+    <div><p class="lbl2" style="margin-bottom:8px">Table masters: every fact in that times table turned green</p><div class="tbadges" id="tBadges"></div></div>
+    <div class="badges" id="bGrid"></div>
+
     <div class="row" style="justify-content:center"><button class="btn ghost small" id="resetBtn">Reset progress</button></div>
-    <div class="confirm" id="resetConfirm" hidden><span>Erase all stars and progress on this device?</span><button class="btn small" id="resetYes" style="background:var(--bad)">Yes, erase</button><button class="btn ghost small" id="resetNo">Keep it</button></div>
+    <div class="confirm" id="resetConfirm" hidden><span id="resetMsg">Erase all stars and progress on this device?</span><button class="btn small" id="resetYes" style="background:var(--bad)">Yes, erase</button><button class="btn ghost small" id="resetNo">Keep it</button></div>
   </section>
 </div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
 <script>
 (() => {
 const $ = id => document.getElementById(id);
-const KEY = 'sayomath.v1';
-const fresh = () => ({facts:{}, stars:0, tables:[2,3,4,5], best:null});
-let S = fresh();
-try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(fresh(), JSON.parse(raw)); } catch(e){}
-const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} };
-const fk = (a,b) => a + 'x' + b;
-function record(a,b,ok){
-  const f = S.facts[fk(a,b)] || (S.facts[fk(a,b)] = {c:0,w:0,s:0});
-  if (ok){ f.c++; f.s++; } else { f.w++; f.s = 0; }
-  save();
-}
-function level(a,b){
-  const f = S.facts[fk(a,b)];
-  if (!f) return 0;
-  if (f.s >= 3) return 3;
-  return f.c > f.w ? 2 : 1;
-}
-function addStars(n){ S.stars += n; save(); $('starCount').textContent = S.stars; }
-$('starCount').textContent = S.stars;
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const store = {
+  get(k){ try { return localStorage.getItem(k); } catch(e){ return null; } },
+  set(k,v){ try { localStorage.setItem(k,v); } catch(e){} },
+  del(k){ try { localStorage.removeItem(k); } catch(e){} }
+};
 const rand = n => Math.floor(Math.random()*n);
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- Players (each has their own saved progress) ---------- */
+const PKEY = 'saifmath.players';
+const COLORS = ['#1C6FD1','#E0702B','#1E9E62','#8A4FD3','#D9483B','#0E8C99','#C2577F','#6B7A1E'];
+let P = null;
+try { P = JSON.parse(store.get(PKEY)); } catch(e){}
+if (!P || !Array.isArray(P.list) || !P.list.length) P = {list:[{id:'p1', name:'Player 1', c:0}], current:'p1'};
+if (!P.list.some(p => p.id === P.current)) P.current = P.list[0].id;
+const saveP = () => store.set(PKEY, JSON.stringify(P));
+saveP();
+// The first player keeps the original key, so progress saved before players existed is kept.
+const dataKey = id => id === 'p1' ? 'sayomath.v1' : 'sayomath.v1.' + id;
+const me = () => P.list.find(p => p.id === P.current);
+const KEY = dataKey(P.current);
+
+const fresh = () => ({facts:{}, dfacts:{}, stars:0, tables:[2,3,4,5], op:'mul', qmode:'quiz',
+  best:null, bestCh:0, bestRun:0, divRight:0, days:{last:'', n:0, best:0}, badges:{}});
+let S = fresh();
+try { const raw = store.get(KEY); if (raw) S = Object.assign(fresh(), JSON.parse(raw)); } catch(e){}
+const save = () => store.set(KEY, JSON.stringify(S));
+
+/* ---------- Daily streak ---------- */
+const dayStr = d => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+const today = () => dayStr(new Date());
+const yesterday = () => { const d = new Date(); d.setDate(d.getDate()-1); return dayStr(d); };
+const curStreak = () => (S.days.last === today() || S.days.last === yesterday()) ? S.days.n : 0;
+function markDay(){
+  const t = today();
+  if (S.days.last === t) return;
+  S.days.n = S.days.last === yesterday() ? S.days.n + 1 : 1;
+  S.days.last = t; S.days.best = Math.max(S.days.best, S.days.n);
+  renderStreak();
+}
+function renderStreak(){
+  const n = curStreak(), done = S.days.last === today();
+  $('dayCount').textContent = n;
+  $('dayChip').classList.toggle('cold', !done);
+  $('dayChip').title = done ? `${n} day${n>1?'s':''} in a row. Come back tomorrow to keep it going!`
+    : n ? `${n} day${n>1?'s':''} in a row. Answer a question today to keep your streak!` : 'Answer a question today to start a streak!';
+}
+
+/* ---------- Facts ---------- */
+const fk = (a,b) => a + 'x' + b;
+const sym = f => f.op === 'div' ? '÷' : '×';
+function factRec(f){
+  const map = f.op === 'div' ? S.dfacts : S.facts;
+  const k = f.op === 'div' ? fk(f.b, f.ans) : fk(f.a, f.b);
+  return map[k] || (map[k] = {c:0, w:0, s:0});
+}
+function record(f, ok){
+  const r = factRec(f);
+  if (ok){ r.c++; r.s++; if (f.op === 'div') S.divRight++; } else { r.w++; r.s = 0; }
+  markDay(); save(); checkBadges();
+}
+const lvOf = r => !r ? 0 : r.s >= 3 ? 3 : r.c > r.w ? 2 : 1;
+const level = (a,b) => lvOf(S.facts[fk(a,b)]);
+const dlevel = (d,q) => lvOf(S.dfacts[fk(d,q)]);
+function addStars(n){ S.stars += n; save(); $('starCount').textContent = S.stars; checkBadges(); }
+
+/* ---------- Badges ---------- */
+const allAnswers = () => [...Object.values(S.facts), ...Object.values(S.dfacts)].reduce((s,f) => s + f.c + f.w, 0);
+const masteredCount = () => { let n = 0; for (let a=1;a<=12;a++) for (let b=1;b<=12;b++) if (level(a,b) === 3) n++; return n; };
+const tableMastered = n => { for (let m=1;m<=12;m++) if (level(n,m) !== 3 && level(m,n) !== 3) return false; return true; };
+const BADGES = [
+  {id:'first', icon:'🌱', name:'First step', desc:'Answer your first question', test:() => allAnswers() >= 1},
+  {id:'roll10', icon:'🔥', name:'On a roll', desc:'Get 10 right in a row in Practice', test:() => S.bestRun >= 10},
+  {id:'roll25', icon:'🌋', name:'Unstoppable', desc:'Get 25 right in a row in Practice', test:() => S.bestRun >= 25},
+  {id:'perfect', icon:'💯', name:'Perfect 10', desc:'Score 10 out of 10 on a quiz', test:() => S.best && S.best.score === 10},
+  {id:'lightning', icon:'⚡', name:'Lightning', desc:'Score 10 out of 10 in under 40 seconds', test:() => S.best && S.best.score === 10 && S.best.secs < 40},
+  {id:'ch15', icon:'⏱️', name:'Speedy', desc:'Get 15 right in a 60-second challenge', test:() => S.bestCh >= 15},
+  {id:'ch25', icon:'🚀', name:'Rocket', desc:'Get 25 right in a 60-second challenge', test:() => S.bestCh >= 25},
+  {id:'div25', icon:'➗', name:'Divider', desc:'Answer 25 division questions right', test:() => S.divRight >= 25},
+  {id:'div100', icon:'🧩', name:'Division pro', desc:'Answer 100 division questions right', test:() => S.divRight >= 100},
+  {id:'day3', icon:'📅', name:'3 days in a row', desc:'Practice 3 days in a row', test:() => S.days.best >= 3},
+  {id:'day7', icon:'🏅', name:'A whole week', desc:'Practice 7 days in a row', test:() => S.days.best >= 7},
+  {id:'stars100', icon:'⭐', name:'Star collector', desc:'Earn 100 stars', test:() => S.stars >= 100},
+  {id:'stars500', icon:'🌟', name:'Superstar', desc:'Earn 500 stars', test:() => S.stars >= 500},
+  {id:'half', icon:'🧭', name:'Halfway there', desc:'Master 72 facts on the map', test:() => masteredCount() >= 72},
+  {id:'champ', icon:'🏆', name:'Champion', desc:'Master all 144 facts', test:() => masteredCount() >= 144}
+];
+for (let n = 1; n <= 12; n++) BADGES.push({id:'t'+n, table:n, icon:'×'+n, name:`×${n} master`, desc:`Master every fact in the ×${n} table`, test:() => tableMastered(n)});
+function checkBadges(){
+  const got = BADGES.filter(b => !S.badges[b.id] && b.test());
+  if (!got.length) return;
+  got.forEach(b => S.badges[b.id] = today());
+  save();
+  if (got.length > 2) toast('🎉', `${got.length} new badges!`, 'See them all in Progress.');
+  else got.forEach(b => toast(b.icon, 'New badge: ' + b.name, b.desc));
+  if (!$('v-progress').hidden) renderProgress();
+}
+const toastQ = []; let toasting = false;
+function toast(icon, title, sub){ toastQ.push({icon, title, sub}); if (!toasting) nextToast(); }
+function nextToast(){
+  const el = $('toast'), t = toastQ.shift();
+  if (!t){ el.hidden = true; toasting = false; return; }
+  toasting = true;
+  el.innerHTML = `<span class="ic">${esc(t.icon)}</span><span><b>${esc(t.title)}</b><small>${esc(t.sub)}</small></span>`;
+  el.hidden = false; el.classList.remove('in'); void el.offsetWidth; el.classList.add('in');
+  setTimeout(nextToast, 3200);
+}
+
+/* ---------- Header ---------- */
+const initial = name => (Array.from(name.trim())[0] || '?').toUpperCase();
+function renderHeader(){
+  const p = me();
+  $('plAv').textContent = initial(p.name); $('plAv').style.background = COLORS[p.c % COLORS.length];
+  $('plNm').textContent = p.name;
+  $('plChip').setAttribute('aria-label', `Player: ${p.name}. Change player`);
+  $('starCount').textContent = S.stars;
+  renderStreak();
+}
+
+/* ---------- Players panel ---------- */
+function starsOf(id){ try { return (JSON.parse(store.get(dataKey(id))) || {}).stars || 0; } catch(e){ return 0; } }
+function renderPlayers(){
+  $('plList').innerHTML = P.list.map(p => `<button class="pbtn" data-id="${p.id}" aria-current="${p.id === P.current}">
+    <span class="av" style="background:${COLORS[p.c % COLORS.length]}">${esc(initial(p.name))}</span>
+    <span>${esc(p.name)}<small>${p.id === P.current ? 'Playing now · ' : ''}${p.id === P.current ? S.stars : starsOf(p.id)} stars</small></span></button>`).join('');
+  [...$('plList').children].forEach(b => b.onclick = () => switchTo(b.dataset.id));
+  $('plName').value = me().name;
+  $('plNameLbl').textContent = `Change ${me().name}'s name`;
+  $('plDel').hidden = P.list.length < 2;
+  $('plDelConfirm').hidden = true;
+}
+function switchTo(id){ if (id === P.current) { $('players').hidden = true; return; } P.current = id; saveP(); location.reload(); }
+$('plChip').onclick = () => { const p = $('players'); p.hidden = !p.hidden; if (!p.hidden){ renderPlayers(); p.scrollIntoView({block:'nearest'}); } };
+$('plClose').onclick = () => $('players').hidden = true;
+function addPlayer(){
+  const name = $('plNew').value.trim().slice(0,20);
+  if (!name){ $('plNew').focus(); return; }
+  const used = P.list.map(p => p.c);
+  let c = 0; while (used.includes(c) && c < COLORS.length - 1) c++;
+  const id = 'p' + Date.now().toString(36);
+  P.list.push({id, name, c}); P.current = id; saveP(); location.reload();
+}
+$('plAdd').onclick = addPlayer;
+$('plNew').onkeydown = e => { if (e.key === 'Enter') addPlayer(); };
+function rename(){ const n = $('plName').value.trim().slice(0,20); if (!n) return; me().name = n; saveP(); renderHeader(); renderPlayers(); }
+$('plRename').onclick = rename;
+$('plName').onkeydown = e => { if (e.key === 'Enter') rename(); };
+$('plDel').onclick = () => { $('plDelMsg').textContent = `Remove ${me().name} and all their stars and progress?`; $('plDelConfirm').hidden = false; };
+$('plDelNo').onclick = () => $('plDelConfirm').hidden = true;
+$('plDelYes').onclick = () => {
+  if (P.list.length < 2) return;
+  store.del(dataKey(P.current));
+  P.list = P.list.filter(p => p.id !== P.current); P.current = P.list[0].id; saveP(); location.reload();
+};
 
 /* ---------- Tabs ---------- */
 const tabs = document.querySelectorAll('nav button');
@@ -297,8 +525,8 @@ function show(view){
   tabs.forEach(t => t.setAttribute('aria-selected', t.dataset.view === view));
   ['learn','practice','quiz','progress'].forEach(v => $('v-'+v).hidden = v !== view);
   if (view === 'progress') renderProgress();
-  if (view === 'practice') { renderPicker('pPicker', newPracticeQ); if (!pState.a) newPracticeQ(); }
-  if (view === 'quiz') renderPicker('qPicker');
+  if (view === 'practice') { renderOps('pOps', () => { renderPicker('pPicker', newPracticeQ); newPracticeQ(); }); renderPicker('pPicker', newPracticeQ); if (!pState.f) newPracticeQ(); }
+  if (view === 'quiz' && !Q.running && $('qDone').hidden) renderQuizSetup();
 }
 tabs.forEach(t => t.addEventListener('click', () => show(t.dataset.view)));
 
@@ -335,24 +563,24 @@ const TIPS = {
   11:['×11 trick','Up to 9, just repeat the digit: 11 × 4 = 44. For 11 × 12, do 110 + 12 = 132.'],
   12:['×12 trick','Do ×10 and ×2, then add. 12 × 7 = 70 + 14 = 84.']
 };
-let la = 3, lb = 4, skipOn = 0;
+let la = 3, lb = 4;
 function renderLearn(animate){
   $('aVal').textContent = la; $('bVal').textContent = lb; $('lResult').textContent = la*lb;
   drawArray($('lArray'), la, lb, {animate});
   $('lExplain').innerHTML = `<b class="a">${la}</b> group${la>1?'s':''} of <b class="b">${lb}</b> makes <b>${la*lb}</b>. That is ${Array(la).fill(lb).join(' + ')} = ${la*lb}.`;
-  const sk = $('lSkip'); sk.innerHTML = ''; skipOn = 0;
+  const sk = $('lSkip'); sk.innerHTML = '';
   for (let i = 1; i <= la; i++){
     const btn = document.createElement('button');
-    btn.textContent = i*lb; btn.dataset.i = i;
+    btn.textContent = i*lb;
     btn.addEventListener('click', () => highlightTo(i));
     sk.appendChild(btn);
   }
   const t = TIPS[lb];
   $('lTipT').textContent = t[0]; $('lTip').textContent = t[1];
+  $('lDiv').textContent = `Division undoes multiplication. Share ${la*lb} into groups of ${lb} and you get ${la} group${la>1?'s':''}: ${la*lb} ÷ ${lb} = ${la}.`;
   $('ptN').textContent = lb;
 }
 function highlightTo(n){
-  skipOn = n;
   [...$('lSkip').children].forEach((b,i) => b.classList.toggle('on', i < n));
   [...$('lArray').children].forEach((r,i) => r.classList.toggle('hl', i < n));
 }
@@ -363,14 +591,28 @@ $('bMinus').onclick = () => { lb = clamp(lb-1); renderLearn(false); };
 $('bPlus').onclick  = () => { lb = clamp(lb+1); renderLearn(true); };
 $('flip').onclick = () => { [la, lb] = [lb, la]; renderLearn(true);
   $('lExplain').innerHTML += ' <br>Same answer when you flip it!'; };
-$('practiceThis').onclick = () => { S.tables = [lb]; save(); pState.a = 0; show('practice'); };
+$('practiceThis').onclick = () => { S.tables = [lb]; S.op = 'mul'; save(); pState.f = null; show('practice'); };
 
-/* ---------- Table picker ---------- */
+/* ---------- Choosers ---------- */
+function renderSeg(id, items, value, onPick){
+  const el = $(id); el.innerHTML = '';
+  items.forEach(([v, label]) => {
+    const b = document.createElement('button');
+    b.textContent = label; b.setAttribute('aria-pressed', v === value);
+    b.onclick = () => onPick(v);
+    el.appendChild(b);
+  });
+}
+const OPS = [['mul','× Times'],['div','÷ Divide'],['mix','Mix both']];
+function renderOps(id, after){
+  renderSeg(id, OPS, S.op, v => { S.op = v; save(); renderOps(id, after); after && after(); });
+}
 function renderPicker(id, onChange){
   const el = $(id); el.innerHTML = '';
+  const pre = S.op === 'div' ? '÷' : '×';
   for (let n = 1; n <= 12; n++){
     const b = document.createElement('button');
-    b.textContent = '×' + n; b.setAttribute('aria-pressed', S.tables.includes(n));
+    b.textContent = pre + n; b.setAttribute('aria-pressed', S.tables.includes(n));
     b.onclick = () => {
       if (S.tables.includes(n)) { if (S.tables.length > 1) S.tables = S.tables.filter(x => x !== n); }
       else S.tables.push(n);
@@ -385,23 +627,26 @@ function renderPicker(id, onChange){
   el.appendChild(all);
 }
 
-/* pick a fact from selected tables, weak facts more likely */
+/* pick a fact from the chosen tables; weak facts come up more often */
+function makeFact(op, t, m){
+  if (op === 'div') return {op, t, m, a:t*m, b:t, ans:m};
+  return Math.random() < .5 ? {op, t, m, a:m, b:t, ans:t*m} : {op, t, m, a:t, b:m, ans:t*m};
+}
 function pickFact(avoid){
+  const ops = S.op === 'mix' ? ['mul','div'] : [S.op];
   const pool = [];
-  S.tables.forEach(t => { for (let m = 1; m <= 12; m++){
-    const lv = level(t, m);
-    const w = lv === 1 ? 4 : lv === 0 ? 2 : lv === 2 ? 2 : 1;
-    // show the table number as the "in each" side half the time
-    const pair = Math.random() < .5 ? [m, t] : [t, m];
-    pool.push({a:pair[0], b:pair[1], w});
-  }});
-  let total = pool.reduce((s,p) => s + p.w, 0), f;
+  S.tables.forEach(t => { for (let m = 1; m <= 12; m++) ops.forEach(op => {
+    const lv = op === 'div' ? dlevel(t, m) : level(t, m);
+    pool.push({op, t, m, w: lv === 1 ? 4 : lv === 3 ? 1 : 2});
+  }); });
+  const total = pool.reduce((s,p) => s + p.w, 0);
+  let p;
   for (let tries = 0; tries < 6; tries++){
     let r = Math.random()*total;
-    f = pool.find(p => (r -= p.w) < 0) || pool[0];
-    if (!avoid || f.a*f.b !== avoid.a*avoid.b || pool.length < 3) break;
+    p = pool.find(x => (r -= x.w) < 0) || pool[0];
+    if (!avoid || pool.length < 3 || !(p.op === avoid.op && p.t === avoid.t && p.m === avoid.m)) break;
   }
-  return f;
+  return makeFact(p.op, p.t, p.m);
 }
 
 /* ---------- Keypad ---------- */
@@ -418,38 +663,45 @@ function buildPad(el, handlers){
   });
 }
 function setAns(el, v){ el.textContent = v || '?'; el.classList.toggle('empty', !v); }
+function showFact(prefix, f){ $(prefix+'A').textContent = f.a; $(prefix+'Op').textContent = sym(f); $(prefix+'B').textContent = f.b; }
 
 /* ---------- Practice ---------- */
 const PRAISE = ['Correct!','Nice work!','You got it!','Awesome!','Super!','Brilliant!'];
-const pState = {a:0, b:0, input:'', locked:false, streak:0, right:0, missed:false};
+const pState = {f:null, input:'', locked:false, streak:0, right:0, missed:false};
 function newPracticeQ(){
-  const f = pickFact(pState.a ? pState : null);
-  Object.assign(pState, {a:f.a, b:f.b, input:'', locked:false, missed:false});
-  $('pA').textContent = f.a; $('pB').textContent = f.b; setAns($('pAns'), '');
+  const f = pickFact(pState.f);
+  Object.assign(pState, {f, input:'', locked:false, missed:false});
+  showFact('p', f); setAns($('pAns'), '');
   $('pQ').classList.remove('good','bad'); $('pFb').textContent = ''; $('pFb').className = 'feedback';
   $('pHint').hidden = true;
 }
 function pCheck(){
   if (pState.locked) { newPracticeQ(); return; }
   if (!pState.input) return;
-  const {a,b} = pState, ok = +pState.input === a*b, q = $('pQ'), fb = $('pFb');
+  const f = pState.f, ok = +pState.input === f.ans, q = $('pQ'), fb = $('pFb');
   if (ok){
-    if (!pState.missed) record(a,b,true);
     pState.locked = true; pState.right++; pState.streak = pState.missed ? 0 : pState.streak + 1;
+    if (pState.streak > S.bestRun) S.bestRun = pState.streak;
+    if (!pState.missed) record(f, true);
     addStars(pState.missed ? 0 : 1);
     q.classList.remove('bad'); q.classList.add('good');
     fb.className = 'feedback good';
-    fb.textContent = PRAISE[rand(PRAISE.length)] + (pState.streak >= 3 && pState.streak % 5 === 0 ? ` ${pState.streak} in a row!` : '');
+    fb.textContent = PRAISE[rand(PRAISE.length)] + (pState.streak >= 5 && pState.streak % 5 === 0 ? ` ${pState.streak} in a row!` : '');
     $('pStreak').textContent = pState.streak; $('pRight').textContent = pState.right;
-    setTimeout(() => { if (pState.locked && pState.a === a && pState.b === b) newPracticeQ(); }, 1100);
+    setTimeout(() => { if (pState.locked && pState.f === f) newPracticeQ(); }, 1100);
   } else {
-    if (!pState.missed) record(a,b,false);
+    if (!pState.missed) record(f, false);
     pState.missed = true; pState.streak = 0; $('pStreak').textContent = 0;
     q.classList.add('bad'); if (!reduced){ q.classList.remove('shake'); void q.offsetWidth; q.classList.add('shake'); }
     fb.className = 'feedback bad'; fb.textContent = 'Not quite. Use the picture, then try again.';
     const h = $('pHint'); h.hidden = false;
-    h.innerHTML = `<p><b>${a}</b> group${a>1?'s':''} of <b>${b}</b>. Count by ${b}s: ${Array.from({length:a},(_,i)=>(i+1)*b).join(', ')}</p><div class="array" id="pArr"></div>`;
-    drawArray($('pArr'), a, b, {max:16});
+    if (f.op === 'div'){
+      h.innerHTML = `<p>Share <b>${f.a}</b> into groups of <b>${f.b}</b>. Count by ${f.b}s until you reach ${f.a}: ${Array.from({length:f.ans},(_,i)=>(i+1)*f.b).join(', ')}. How many groups is that?</p><div class="array" id="pArr"></div>`;
+      drawArray($('pArr'), f.ans, f.b, {max:16});
+    } else {
+      h.innerHTML = `<p><b>${f.a}</b> group${f.a>1?'s':''} of <b>${f.b}</b>. Count by ${f.b}s: ${Array.from({length:f.a},(_,i)=>(i+1)*f.b).join(', ')}</p><div class="array" id="pArr"></div>`;
+      drawArray($('pArr'), f.a, f.b, {max:16});
+    }
     pState.input = ''; setTimeout(() => setAns($('pAns'), ''), 500);
   }
 }
@@ -459,69 +711,123 @@ buildPad($('pPad'), {
   go: pCheck
 });
 
-/* ---------- Quiz ---------- */
-const Q = {list:[], i:0, score:0, input:'', t0:0, timer:null, misses:[], busy:false};
+/* ---------- Quiz and 60-second challenge ---------- */
+const CH_SECS = 60;
+const Q = {mode:'quiz', list:[], i:0, f:null, score:0, wrong:0, input:'', t0:0, timer:null, to:null, misses:[], busy:false, running:false};
+function renderQuizSetup(){
+  const ch = S.qmode === 'ch';
+  renderSeg('qModes', [['quiz','10 questions'],['ch','60-second challenge']], S.qmode, v => { S.qmode = v; save(); renderQuizSetup(); });
+  renderOps('qOps', () => renderPicker('qPicker'));
+  renderPicker('qPicker');
+  $('qTitle').textContent = ch ? 'Beat the clock' : 'Quiz time';
+  $('qDesc').textContent = ch ? `How many can you get right in ${CH_SECS} seconds? Each right answer earns a star.`
+    : '10 questions. Answer as fast and as carefully as you can. Each right answer earns a star.';
+  $('qStart').textContent = ch ? 'Start the clock' : 'Start quiz';
+  $('qBest').textContent = ch ? (S.bestCh ? `Your best: ${S.bestCh} right in ${CH_SECS} seconds.` : '')
+    : (S.best ? `Your best: ${S.best.score}/10 in ${S.best.secs} seconds.` : '');
+}
+function tick(){
+  const el = (Date.now() - Q.t0) / 1000;
+  if (Q.mode === 'ch'){
+    const left = Math.max(0, CH_SECS - el);
+    $('qTime').textContent = Math.ceil(left) + 's';
+    $('qBar').style.width = (left / CH_SECS * 100) + '%';
+    if (left <= 0) endQuiz();
+  } else $('qTime').textContent = Math.round(el) + 's';
+}
 function startQuiz(){
-  Q.list = []; let prev = null;
-  for (let i = 0; i < 10; i++){ prev = pickFact(prev); Q.list.push(prev); }
-  Object.assign(Q, {i:0, score:0, input:'', misses:[], busy:false, t0:Date.now()});
+  clearInterval(Q.timer); clearTimeout(Q.to);
+  Object.assign(Q, {mode:S.qmode, list:[], i:0, f:null, score:0, wrong:0, input:'', misses:[], busy:false, running:true, t0:Date.now()});
+  if (Q.mode === 'quiz'){ let prev = null; for (let i = 0; i < 10; i++){ prev = pickFact(prev); Q.list.push(prev); } }
   $('qSetup').hidden = true; $('qDone').hidden = true; $('qRun').hidden = false;
-  clearInterval(Q.timer);
-  Q.timer = setInterval(() => $('qTime').textContent = Math.round((Date.now()-Q.t0)/1000) + 's', 500);
-  $('qTime').textContent = '0s'; $('qScore').textContent = 0;
+  $('qOf').hidden = Q.mode === 'ch';
+  $('qTimeLbl').textContent = Q.mode === 'ch' ? 'Time left' : 'Time';
+  $('qScore').textContent = 0;
+  tick(); Q.timer = setInterval(tick, 200);
   showQuizQ();
 }
 function showQuizQ(){
-  const f = Q.list[Q.i];
-  $('qNum').textContent = Q.i + 1; $('qA').textContent = f.a; $('qB').textContent = f.b;
-  $('qBar').style.width = (Q.i*10) + '%';
+  const f = Q.mode === 'quiz' ? Q.list[Q.i] : pickFact(Q.f);
+  Q.f = f;
+  $('qNum').textContent = Q.i + 1; showFact('q', f);
+  if (Q.mode === 'quiz') $('qBar').style.width = (Q.i*10) + '%';
   Q.input = ''; setAns($('qAns'), ''); $('qQ').classList.remove('good','bad'); $('qFb').textContent = '';
 }
 function qCheck(){
-  if (Q.busy || !Q.input) return;
-  const f = Q.list[Q.i], ok = +Q.input === f.a*f.b;
-  record(f.a, f.b, ok); Q.busy = true;
+  if (Q.busy || !Q.input || !Q.running) return;
+  const f = Q.f, ok = +Q.input === f.ans;
+  record(f, ok); Q.busy = true;
   $('qQ').classList.add(ok ? 'good' : 'bad');
   $('qFb').className = 'feedback ' + (ok ? 'good' : 'bad');
-  $('qFb').textContent = ok ? 'Correct!' : `It is ${f.a*f.b}`;
-  if (ok) { Q.score++; $('qScore').textContent = Q.score; } else Q.misses.push(f);
-  setTimeout(() => { Q.busy = false; Q.i++; Q.i < 10 ? showQuizQ() : endQuiz(); }, ok ? 600 : 1400);
+  $('qFb').textContent = ok ? 'Correct!' : `It is ${f.ans}`;
+  if (ok) { Q.score++; $('qScore').textContent = Q.score; } else { Q.wrong++; Q.misses.push(f); }
+  const wait = Q.mode === 'ch' ? (ok ? 250 : 900) : (ok ? 600 : 1400);
+  Q.to = setTimeout(() => {
+    Q.busy = false; Q.i++;
+    if (!Q.running) return;
+    if (Q.mode === 'quiz' && Q.i >= 10) endQuiz(); else showQuizQ();
+  }, wait);
 }
 function endQuiz(){
-  clearInterval(Q.timer);
+  if (!Q.running) return;
+  Q.running = false; Q.busy = false;
+  clearInterval(Q.timer); clearTimeout(Q.to);
   const secs = Math.round((Date.now()-Q.t0)/1000);
-  $('qBar').style.width = '100%';
-  addStars(Q.score + (Q.score === 10 ? 5 : 0));
-  const newBest = !S.best || Q.score > S.best.score || (Q.score === S.best.score && secs < S.best.secs);
-  if (newBest) { S.best = {score:Q.score, secs}; save(); }
+  let stars, msg, summary;
+  if (Q.mode === 'ch'){
+    $('qBar').style.width = '0%';
+    const newBest = Q.score > S.bestCh;
+    if (newBest) S.bestCh = Q.score;
+    stars = Q.score;
+    msg = Q.score >= 25 ? 'Lightning fast!' : Q.score >= 15 ? 'Great speed!' : Q.score >= 8 ? 'Good effort!' : 'Keep going, you will get faster!';
+    summary = `You got ${Q.score} right${Q.wrong ? ` and ${Q.wrong} wrong` : ''} in ${CH_SECS} seconds. You earned ${stars} star${stars===1?'':'s'}.${newBest ? ' New personal best!' : ` Your best is ${S.bestCh}.`}`;
+    $('qOutOf').textContent = ' right';
+  } else {
+    $('qBar').style.width = '100%';
+    stars = Q.score + (Q.score === 10 ? 5 : 0);
+    const newBest = !S.best || Q.score > S.best.score || (Q.score === S.best.score && secs < S.best.secs);
+    if (newBest) S.best = {score:Q.score, secs};
+    msg = Q.score === 10 ? 'Perfect score!' : Q.score >= 8 ? 'Great job!' : Q.score >= 5 ? 'Good effort!' : 'Keep practicing, you will get there!';
+    summary = `Finished in ${secs} seconds. You earned ${stars} stars${Q.score===10?' (5 bonus for a perfect quiz)':''}.${newBest ? ' New personal best!' : ''}`;
+    $('qOutOf').textContent = '/10';
+  }
+  save(); addStars(stars);
   $('qRun').hidden = true; $('qDone').hidden = false;
-  $('qFinal').textContent = Q.score;
-  $('qMsg').textContent = Q.score === 10 ? 'Perfect score!' : Q.score >= 8 ? 'Great job!' : Q.score >= 5 ? 'Good effort!' : 'Keep practicing, you will get there!';
-  $('qSummary').textContent = `Finished in ${secs} seconds. You earned ${Q.score + (Q.score===10?5:0)} stars${Q.score===10?' (5 bonus for a perfect quiz)':''}.${newBest ? ' New personal best!' : ''}`;
-  $('qMissWrap').hidden = !Q.misses.length;
-  $('qMisses').innerHTML = Q.misses.map(f => `<span>${f.a} × ${f.b} = ${f.a*f.b}</span>`).join('');
+  $('qFinal').textContent = Q.score; $('qMsg').textContent = msg; $('qSummary').textContent = summary;
+  const seen = new Set(), misses = Q.misses.filter(f => { const k = f.a + sym(f) + f.b; return !seen.has(k) && seen.add(k); });
+  $('qMissWrap').hidden = !misses.length;
+  $('qMisses').innerHTML = misses.map(f => `<span>${f.a} ${sym(f)} ${f.b} = ${f.ans}</span>`).join('');
 }
-function renderBest(){ $('qBest').textContent = S.best ? `Your best: ${S.best.score}/10 in ${S.best.secs} seconds.` : ''; }
 $('qStart').onclick = startQuiz;
-$('qAgain').onclick = () => { $('qDone').hidden = true; $('qSetup').hidden = false; renderBest(); renderPicker('qPicker'); };
-$('qToPractice').onclick = () => { if (Q.misses.length) S.tables = [...new Set(Q.misses.map(f => Math.max(f.a,f.b)))]; save(); pState.a = 0; show('practice'); };
+$('qAgain').onclick = () => { $('qDone').hidden = true; $('qSetup').hidden = false; renderQuizSetup(); };
+$('qToPractice').onclick = () => {
+  if (Q.misses.length) S.tables = [...new Set(Q.misses.map(f => f.t))];
+  save(); pState.f = null; $('qDone').hidden = true; $('qSetup').hidden = false; show('practice');
+};
 buildPad($('qPad'), {
   digit: d => { if (Q.busy || Q.input.length >= 3) return; Q.input += d; setAns($('qAns'), Q.input); },
   del: () => { if (Q.busy) return; Q.input = Q.input.slice(0,-1); setAns($('qAns'), Q.input); },
   go: qCheck
 });
-renderBest();
 
 /* ---------- Progress ---------- */
+let mapOp = 'mul';
 function renderProgress(){
-  let html = '<tr><th>×</th>' + Array.from({length:12},(_,i)=>`<th>${i+1}</th>`).join('') + '</tr>';
+  const div = mapOp === 'div';
+  renderSeg('mOps', [['mul','× Times map'],['div','÷ Division map']], mapOp, v => { mapOp = v; renderProgress(); });
+  $('mTitle').textContent = div ? 'Your division map' : 'Your times table map';
+  $('mSub').textContent = div ? 'Each row is a ÷ table, and each box shows the number being shared. A box turns green once you get it right 3 times in a row.'
+    : 'A fact turns green once you get it right 3 times in a row.';
+  const lv = div ? dlevel : level;
+  let html = `<tr><th>${div ? '÷' : '×'}</th>` + Array.from({length:12},(_,i)=>`<th>${div ? '=' + (i+1) : i+1}</th>`).join('') + '</tr>';
   let mastered = 0, c = 0, w = 0;
-  Object.values(S.facts).forEach(f => { c += f.c; w += f.w; });
+  Object.values(div ? S.dfacts : S.facts).forEach(f => { c += f.c; w += f.w; });
   for (let a = 1; a <= 12; a++){
     html += `<tr><th>${a}</th>`;
     for (let b = 1; b <= 12; b++){
-      const lv = level(a,b); if (lv === 3) mastered++;
-      html += `<td class="l${lv}" title="${a} × ${b} = ${a*b}">${lv ? a*b : ''}</td>`;
+      const l = lv(a,b); if (l === 3) mastered++;
+      const title = div ? `${a*b} ÷ ${a} = ${b}` : `${a} × ${b} = ${a*b}`;
+      html += `<td class="l${l}" title="${title}">${l ? a*b : ''}</td>`;
     }
     html += '</tr>';
   }
@@ -529,13 +835,22 @@ function renderProgress(){
   $('sMastered').textContent = `${mastered}/144`;
   $('sAnswered').textContent = c + w;
   $('sAcc').textContent = c + w ? Math.round(100*c/(c+w)) + '%' : '–';
+
+  const earned = BADGES.filter(b => S.badges[b.id]).length;
+  $('bCount').textContent = `${earned} of ${BADGES.length} earned. Longest day streak: ${S.days.best} day${S.days.best===1?'':'s'}.`;
+  $('tBadges').innerHTML = BADGES.filter(b => b.table).map(b =>
+    `<span class="tb${S.badges[b.id] ? ' got' : ''}" title="${b.name}${S.badges[b.id] ? ' (earned)' : ''}">×${b.table}</span>`).join('');
+  $('bGrid').innerHTML = BADGES.filter(b => !b.table).map(b =>
+    `<div class="badge ${S.badges[b.id] ? 'got' : 'locked'}"><span class="ic" aria-hidden="true">${b.icon}</span><div><b>${b.name}</b><span>${b.desc}</span></div></div>`).join('');
+  $('resetMsg').textContent = `Erase all of ${me().name}'s stars, badges and progress?`;
 }
 $('resetBtn').onclick = () => $('resetConfirm').hidden = false;
 $('resetNo').onclick = () => $('resetConfirm').hidden = true;
-$('resetYes').onclick = () => { S = fresh(); save(); $('starCount').textContent = 0; $('resetConfirm').hidden = true; renderProgress(); renderBest(); };
+$('resetYes').onclick = () => { S = fresh(); save(); $('resetConfirm').hidden = true; renderHeader(); renderProgress(); };
 
 /* ---------- Physical keyboard ---------- */
 document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT') return;
   const view = [...tabs].find(t => t.getAttribute('aria-selected') === 'true').dataset.view;
   const pad = view === 'practice' ? $('pPad') : view === 'quiz' && !$('qRun').hidden ? $('qPad') : null;
   if (!pad) return;
@@ -545,7 +860,18 @@ document.addEventListener('keydown', e => {
   else if (e.key === 'Enter') { btns[11].click(); e.preventDefault(); }
 });
 
+/* ---------- Install as an app, and work offline ---------- */
+let installEvt = null;
+addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; $('installBtn').hidden = false; });
+$('installBtn').onclick = async () => { if (!installEvt) return; installEvt.prompt(); try { await installEvt.userChoice; } catch(e){} installEvt = null; $('installBtn').hidden = true; };
+addEventListener('appinstalled', () => $('installBtn').hidden = true);
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+  addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+
+renderHeader();
 renderLearn(true);
+checkBadges();
 addEventListener('resize', () => drawArray($('lArray'), la, lb, {}));
 })();
 </script>
