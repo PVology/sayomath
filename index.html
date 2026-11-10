@@ -3,8 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>SayoMath</title>
+<title>Saif Math</title>
 <meta name="claude:viewport-fit-sides" content="cover">
+<link rel="icon" type="image/svg+xml" href="logo/favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap">
 <style>
@@ -42,6 +43,10 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--sun);outline-of
 
 header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .logo{display:flex;align-items:center;gap:10px;font-family:var(--display);font-size:28px;font-weight:700;letter-spacing:-.5px}
+.logo .mark{display:block;width:62px;height:48px}
+.logo .w1{color:#3E4FD8;white-space:pre}.logo .w2{color:#F2A900}
+:root[data-theme="dark"] .logo .w1{color:#7C8CFF}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .logo .w1{color:#7C8CFF}}
 .logo .x{display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:var(--accent);color:var(--accent-ink);font-size:28px;transform:rotate(-6deg)}
 .stars{display:flex;align-items:center;gap:6px;background:var(--sun-soft);border:2px solid var(--sun);padding:4px 12px;border-radius:999px;font-weight:800;font-variant-numeric:tabular-nums}
 .stars svg{width:20px;height:20px;fill:var(--sun)}
@@ -164,7 +169,7 @@ body{margin:0}
 <body>
 <div class="wrap">
   <header>
-    <div class="logo"><span class="x">×</span>SayoMath</div>
+    <div class="logo"><img class="mark" src="logo/saifmath-icon.svg" alt="" width="62" height="48"><span><span class="w1">Saif </span><span class="w2">Math</span></span></div>
     <div class="stars" title="Stars earned"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/></svg><span id="starCount">0</span></div>
   </header>
 
