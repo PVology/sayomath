@@ -1,4 +1,4 @@
-/* Saif Math lessons: visual, interactive lessons up to Year 5 (and long division).
+/* Saif Math lessons: visual, interactive lessons up to Year 5 (and long division), plus decimals, cube numbers and clue puzzles.
    Uses helpers from index.html through window.SM. */
 (() => {
 const SM = window.SM;
@@ -28,11 +28,19 @@ const GROUPS = [
     {id:'multiples', icon:'#', name:'Multiples', desc:'Find them on the 100 square', yr:'Year 4-5'},
     {id:'factors', icon:'▭', name:'Factors', desc:'Factor pairs as rectangles', yr:'Year 5'},
     {id:'primes', icon:'★', name:'Prime numbers', desc:'Sieve them out step by step', yr:'Year 5'},
-    {id:'squares', icon:'■', name:'Square numbers', desc:'Numbers that make squares', yr:'Year 5'}
+    {id:'squares', icon:'■', name:'Square numbers', desc:'Numbers that make squares', yr:'Year 5'},
+    {id:'cubes', icon:'³', name:'Cube numbers', desc:'A number times itself, three times', yr:'Year 5-6'}
+  ]},
+  {title:'Decimals', color:'#D9485F', items:[
+    {id:'round', icon:'≈', name:'Rounding decimals', desc:'Look at the tenths digit', yr:'Year 5'},
+    {id:'dseq', icon:'+', name:'Decimal sequences', desc:'Find the step, fill the gaps', yr:'Year 5'},
+    {id:'bonds', icon:'1', name:'Make 1 and make 10', desc:'Decimals that fit together', yr:'Year 5'},
+    {id:'dcol', icon:'.', name:'Add and subtract decimals', desc:'Line up the points', yr:'Year 5'}
   ]},
   {title:'Problem solving', color:'#8A4FD3', items:[
     {id:'missing', icon:'?', name:'Missing numbers', desc:'Use the inverse to find ?', yr:'Year 3-5'},
-    {id:'words', icon:'✎', name:'Word problems', desc:'Draw a bar model, then solve', yr:'Year 3-5'}
+    {id:'words', icon:'✎', name:'Word problems', desc:'Draw a bar model, then solve', yr:'Year 3-5'},
+    {id:'clues', icon:'🔍', name:'Number clue puzzles', desc:'Use the clues to find the number', yr:'Year 5'}
   ]}
 ];
 const ALL = GROUPS.flatMap(g => g.items.map(it => ({...it, color:g.color, group:g.title})));
@@ -83,6 +91,7 @@ SM.openLesson = openLesson;
 document.addEventListener('keydown', e => {
   if (!padTarget || $('v-learn').hidden || $('lLesson').hidden || e.target.tagName === 'INPUT') return;
   if (/^[0-9]$/.test(e.key)) { padTarget.digit(e.key); e.preventDefault(); }
+  else if (e.key === '.' && padTarget.dot) { padTarget.dot(); e.preventDefault(); }
   else if (e.key === 'Backspace') { padTarget.del(); e.preventDefault(); }
   else if (e.key === 'Enter') { padTarget.go(); e.preventDefault(); }
 });
@@ -662,7 +671,8 @@ const LESSONS = {
     levels:[['2x1','2-digit × 1'],['3x1','3-digit × 1'],['2x2','2-digit × 2']], make:makeArea}),
   multiples: host => hundred(host, 'multiples'), factors: host => hundred(host, 'factors'),
   primes: host => hundred(host, 'primes'), squares: host => hundred(host, 'squares'),
-  missing: host => quick(host, 'missing'), words: host => quick(host, 'words')
+  missing: host => quick(host, 'missing'), words: host => quick(host, 'words'),
+  round: lessonRound, dseq: lessonSeq, bonds: lessonBonds, dcol: lessonDcol, clues: lessonClues, cubes: lessonCubes
 };
 
 /* =====================================================================
@@ -850,6 +860,413 @@ function quick(host, kind){
     }
   }
   next();
+}
+
+/* =====================================================================
+   DECIMALS, PUZZLES AND CUBES (Year 5)
+   ===================================================================== */
+const D = s => Math.round(parseFloat(s) * 1000);                 // text -> thousandths
+const fd = n => { const s = (n / 1000).toFixed(3); return s.replace(/\.?0+$/, ''); };   // thousandths -> text
+const fh = n => fd(n * 10);                                       // hundredths -> text
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--){ const j = rnd(0, i); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+
+function dpad(el, handlers){
+  el.innerHTML = ''; el.classList.add('dpad');
+  ['1','2','3','4','5','6','7','8','9','.','0','del','go'].forEach(k => {
+    const b = h('button', k === 'del' ? 'del' : k === 'go' ? 'go' : '', k === 'del' ? '⌫' : k === 'go' ? '✓ Check' : k);
+    if (k === 'del') b.setAttribute('aria-label', 'Delete');
+    if (k === 'go') b.setAttribute('aria-label', 'Check answer');
+    if (k === '.') b.setAttribute('aria-label', 'Decimal point');
+    b.onclick = () => k === 'del' ? handlers.del() : k === 'go' ? handlers.go() : handlers.digit(k);
+    el.appendChild(b);
+  });
+}
+function typer(onChange, maxLen){
+  let input = '';
+  const t = {
+    get v(){ return input; }, set v(x){ input = x; onChange(input); },
+    digit(d){ if (t.locked || input.length >= (maxLen || 8)) return; if (d === '.' && input.includes('.')) return; input = (d === '.' && !input ? '0' : input) + d; onChange(input); },
+    dot(){ t.digit('.'); },
+    del(){ if (t.locked) return; input = input.slice(0, -1); onChange(input); },
+    locked: false
+  };
+  return t;
+}
+
+/* Generic decimal quiz: cfg.make(level) -> {html, ans (thousandths), hint, explain} */
+function dquiz(host, cfg){
+  const S = SM.S(); S.glevel = S.glevel || {};
+  let level = S.glevel[cfg.kind] || (cfg.levels ? cfg.levels[0][0] : null);
+  const top = h('div', 'controls');
+  if (cfg.levels) top.appendChild(seg(cfg.levels, level, v => { level = v; S.glevel[cfg.kind] = v; SM.save(); next(); }));
+  const meter = h('div', 'meter'); meter.innerHTML = 'Right <b>0</b>'; top.appendChild(meter);
+  const area = h('div', 'q-area'), qEl = h('div', 'q wq'), pad = h('div', 'pad');
+  area.append(qEl, pad); host.append(top, area);
+  let P, right = 0, missed = false;
+  const T = typer(v => { const a = qEl.querySelector('.answer'); if (a){ a.textContent = v || '?'; a.classList.toggle('empty', !v); } });
+  T.go = () => { if (T.locked) { next(); return; } if (T.v && T.v !== '0.') check(); };
+  dpad(pad, T);
+  function next(){
+    P = cfg.make(level); T.locked = false; T.v = ''; missed = false; padTarget = T;
+    qEl.className = 'q wq';
+    qEl.innerHTML = `<div class="wtext">${P.html}</div><div class="ansrow">${P.label || 'Answer'}: <span class="answer empty">?</span></div>
+      <div class="feedback" aria-live="polite"></div><div class="hint" hidden></div><div class="row"><button class="btn ghost small hb">Hint</button></div>`;
+    qEl.querySelector('.hb').onclick = showHint;
+  }
+  function showHint(){ const hn = qEl.querySelector('.hint'); hn.hidden = false; hn.innerHTML = P.hint; }
+  function check(){
+    const fb = qEl.querySelector('.feedback');
+    if (D(T.v) === P.ans){
+      T.locked = true; right++; meter.innerHTML = `Right <b>${right}</b>`;
+      qEl.classList.add('good'); fb.className = 'feedback good'; fb.innerHTML = `Correct! ${P.explain}` + (missed ? '' : ' +1 star');
+      if (P.after){ const hn = qEl.querySelector('.hint'); hn.hidden = false; hn.innerHTML = P.after; }
+      reward(missed ? 0 : 1, cfg.kind);
+      const r = qEl.querySelector('.row'); r.innerHTML = ''; r.appendChild(btn('Next question', '', next));
+    } else {
+      missed = true; T.v = ''; shake(qEl);
+      fb.className = 'feedback bad'; fb.textContent = 'Not quite. Look at the hint and try again.'; showHint();
+    }
+  }
+  next();
+}
+
+/* Tap-to-choose challenge (ring / tick) */
+function tapChallenge(host, cfg){
+  host.appendChild(h('h3', 'y5-h3', cfg.title));
+  const q = h('p', 'explain'), chips = h('div', 'y5-chips'), fb = h('div', 'feedback'), list = h('div', 'y5-why'), row = h('div', 'row');
+  fb.setAttribute('aria-live', 'polite'); row.style.justifyContent = 'center';
+  host.append(q, chips, row, fb, list);
+  let P, picked = new Set(), done = false;
+  const checkB = btn('Check', '', check);
+  row.append(checkB, btn('New numbers', 'ghost', start));
+  function start(){
+    P = cfg.make(); picked = new Set(); done = false; checkB.disabled = false;
+    q.innerHTML = P.q; fb.className = 'feedback'; fb.textContent = ''; list.innerHTML = '';
+    chips.innerHTML = '';
+    P.items.forEach((it, i) => {
+      const c = h('button', 'y5-chip', it.label); c.setAttribute('aria-pressed', 'false');
+      c.onclick = () => {
+        if (done) return;
+        if (picked.has(i)) picked.delete(i); else { if (cfg.max && picked.size >= cfg.max) return; picked.add(i); }
+        c.setAttribute('aria-pressed', picked.has(i));
+      };
+      chips.appendChild(c);
+    });
+  }
+  function check(){
+    const els = [...chips.children];
+    const wrong = P.items.filter((it, i) => it.good !== picked.has(i)).length;
+    els.forEach((c, i) => { c.classList.remove('ok', 'no'); if (picked.has(i)) c.classList.add(P.items[i].good ? 'ok' : 'no'); });
+    if (!wrong){
+      done = true; checkB.disabled = true; fb.className = 'feedback good'; fb.textContent = 'All correct! +2 stars'; reward(2, cfg.kind);
+      list.innerHTML = P.why;
+    } else {
+      fb.className = 'feedback bad'; fb.textContent = cfg.tryMsg(wrong); shake(chips);
+      if (cfg.showWhyOnMiss) list.innerHTML = P.why;
+    }
+  }
+  start();
+}
+
+/* ---------- Rounding decimals ---------- */
+function lessonRound(host){
+  head(host, 'Rounding decimals', 'To round to the nearest whole number, look at the <b>tenths digit</b> (the first digit after the point). 5 or more: round <b>up</b>. Less than 5: the whole number <b>stays</b>.');
+  let W = 8, t = 54;
+  const top = h('div', 'controls');
+  top.appendChild(stepper('Whole number', W, 0, 99, v => { W = v; draw(); }, 'a'));
+  const box = h('div', 'nl-box'), say = h('p', 'explain');
+  const rng = h('input', 'y5-rng'); rng.type = 'range'; rng.min = 0; rng.max = 99; rng.value = t; rng.setAttribute('aria-label', 'Slide the decimal along the line');
+  rng.oninput = () => { t = +rng.value; draw(); };
+  host.append(top, box, rng, say);
+  function draw(){
+    const x0 = 34, x1 = 486, X = k => x0 + (x1 - x0) * k / 100, up = t >= 50, R = up ? W + 1 : W;
+    let s = `<svg class="nl y5-nl" viewBox="0 0 520 104" role="img" aria-label="Number line from ${W} to ${W + 1}">`;
+    s += `<rect class="y5-half" x="${X(50)}" y="30" width="${X(100) - X(50)}" height="30" rx="4"/>`;
+    s += `<line class="ax" x1="${x0}" y1="45" x2="${x1}" y2="45"/>`;
+    for (let k = 0; k <= 10; k++){
+      const big = k === 0 || k === 10 || k === 5;
+      s += `<line class="tk" x1="${X(k * 10)}" x2="${X(k * 10)}" y1="${big ? 32 : 38}" y2="${big ? 58 : 52}"/>`;
+      s += `<text class="nlab" x="${X(k * 10)}" y="80" style="font-size:${k === 0 || k === 10 ? 24 : 16}px">${k === 0 ? W : k === 10 ? W + 1 : fh(W * 100 + k * 10)}</text>`;
+    }
+    s += `<circle class="y5-ring" cx="${X(up ? 100 : 0)}" cy="74" r="16"/>`;
+    s += `<path class="y5-mk ${up ? 'up' : 'dn'}" d="M${X(t)} 30 l-8 -13 h16z"/>`;
+    s += `<text class="nlab" x="${Math.max(30, Math.min(490, X(t)))}" y="14" style="font-size:20px">${fh(W * 100 + t)}</text></svg>`;
+    box.innerHTML = s;
+    const td = Math.floor(t / 10);
+    say.innerHTML = `<b>${fh(W * 100 + t)}</b>: the tenths digit is <b class="${up ? 'y5-good' : 'bad-t'}">${td}</b>. ${td} is ${up ? '5 or more, so round <b>up</b>' : 'less than 5, so the whole number <b>stays</b>'} → <b>${R}</b>`;
+  }
+  draw();
+  const rounds = v => Math.floor((v + 50) / 100);
+  tapChallenge(host, {kind:'round', title:'Challenge: ring the numbers', tryMsg: n => `${n} not right yet. Check the tenths digit of each number.`, showWhyOnMiss:false,
+    make(){
+      const T = rnd(3, 30); let good = [], bad = [], seen = new Set(), guard = 0;
+      while ((good.length < 3 || bad.length < 3) && guard++ < 500){
+        const base = pick([T - 1, T, T, T + 1]); let f = rnd(0, 99); if (rnd(0, 1)) f = rnd(0, 9) * 10;
+        const v = base * 100 + f; if (v <= 0 || seen.has(v)) continue;
+        if (rounds(v) === T){ if (good.length < 3){ good.push(v); seen.add(v); } } else if (bad.length < 3){ bad.push(v); seen.add(v); }
+      }
+      const items = shuffle([...good.map(v => ({v, good:true})), ...bad.map(v => ({v, good:false}))]).map(o => ({...o, label: fh(o.v)}));
+      return {q:`Tap to ring every number that equals <b>${T}</b> when rounded to the nearest whole number.`, items,
+        why:'<ul>' + items.map(o => `<li>${o.label}: tenths digit ${Math.floor((o.v % 100) / 10)} → <b>${rounds(o.v)}</b> ${o.good ? '✓' : ''}</li>`).join('') + '</ul>'};
+    }});
+  reward(0, null);
+}
+
+/* ---------- Decimal sequences ---------- */
+function lessonSeq(host){
+  head(host, 'Decimal sequences', 'A sequence changes by the same amount each time. Find the step from two numbers next to each other, then keep adding. To go backwards, subtract.');
+  const S = SM.S(); S.glevel = S.glevel || {}; let level = S.glevel.dseq || 'find';
+  const top = h('div', 'controls');
+  top.appendChild(seg([['find','Find the step'],['back','Go backwards']], level, v => { level = v; S.glevel.dseq = v; SM.save(); next(); }));
+  const meter = h('div', 'meter'); meter.innerHTML = 'Right <b>0</b>'; top.appendChild(meter);
+  const area = h('div', 'q-area'), qEl = h('div', 'q wq'), pad = h('div', 'pad');
+  area.append(qEl, pad); host.append(top, area);
+  let P, right = 0, missed = false;
+  const T = typer(v => { const c = qEl.querySelector('.y5-term.cur'); if (c){ c.textContent = v || '?'; } const a = qEl.querySelector('.answer'); if (a){ a.textContent = v || '?'; a.classList.toggle('empty', !v); } });
+  T.go = () => { if (T.locked) { next(); return; } if (T.v) check(); };
+  dpad(pad, T);
+  function next(){
+    const step = pick([5, 10, 15, 20, 25, 25, 30, 50, 75]);
+    const start = rnd(2, 60) * 5;
+    const terms = Array.from({length:6}, (_, i) => start + i * step);
+    let blanks, stage;
+    if (level === 'find'){ blanks = pick([[2, 3, 5], [2, 4, 5], [3, 4], [2, 3]]); stage = 'step'; }
+    else { blanks = [0, 3]; stage = 'fill'; terms.length = 4; }
+    P = {step, terms, blanks, known:new Set(), stage, cur: stage === 'fill' ? blanks[0] : -1};
+    T.locked = false; T.v = ''; missed = false; padTarget = T; render();
+  }
+  function render(){
+    const showStep = P.stage === 'fill' || P.stage === 'done';
+    const row = P.terms.map((v, i) => {
+      const hidden = P.blanks.includes(i) && !P.known.has(i);
+      const cls = 'y5-term' + (hidden ? ' gap' : '') + (i === P.cur ? ' cur' : '') + (P.known.has(i) ? ' found' : '');
+      return `<span class="${cls}">${hidden ? '?' : fh(v)}</span>`;
+    }).join(`<span class="y5-step">${showStep ? '+' + fh(P.step) : '+ ?'}</span>`);
+    const first = P.terms.findIndex((_, i) => !P.blanks.includes(i));
+    let ask;
+    if (P.stage === 'step') ask = `Step: <span class="answer empty">?</span>`;
+    else if (P.stage === 'done') ask = 'Sequence complete!';
+    else ask = `Type the number in the yellow box.`;
+    qEl.className = 'q wq';
+    qEl.innerHTML = `<div class="y5-seq">${row}</div><div class="ansrow">${ask}</div><div class="feedback" aria-live="polite"></div><div class="hint" hidden></div>
+      <div class="row">${P.stage === 'done' ? '' : '<button class="btn ghost small hb">Hint</button>'}</div>`;
+    const hb = qEl.querySelector('.hb'); if (hb) hb.onclick = showHint;
+    P.hintText = P.stage === 'step'
+      ? `Take two numbers next to each other: ${fh(P.terms[first + 1])} − ${fh(P.terms[first])} = ?`
+      : P.cur === 0 ? `Going backwards: ${fh(P.terms[1])} − ${fh(P.step)} = ?` : `Add the step: ${fh(P.terms[P.cur - 1])} + ${fh(P.step)} = ?`;
+  }
+  function showHint(){ const hn = qEl.querySelector('.hint'); hn.hidden = false; hn.innerHTML = `<p>${P.hintText}</p>`; }
+  function nextBlank(){ return P.blanks.find(i => !P.known.has(i)); }
+  function check(){
+    const want = P.stage === 'step' ? P.step : P.terms[P.cur];
+    const fb = () => qEl.querySelector('.feedback');
+    if (D(T.v) === want * 10){
+      if (P.stage === 'step'){ P.stage = 'fill'; P.cur = nextBlank(); T.v = ''; render(); const f = fb(); f.className = 'feedback good'; f.textContent = `Yes! The step is ${fh(P.step)}. Now fill the gaps.`; return; }
+      P.known.add(P.cur); const nb = nextBlank(); T.v = '';
+      if (nb === undefined){
+        P.stage = 'done'; P.cur = -1; T.locked = true; right++; meter.innerHTML = `Right <b>${right}</b>`; render();
+        const f = fb(); f.className = 'feedback good'; f.textContent = 'You filled every gap!' + (missed ? '' : ' +2 stars');
+        reward(missed ? 0 : 2, 'dseq');
+        const r = qEl.querySelector('.row'); r.innerHTML = ''; r.appendChild(btn('Next sequence', '', next));
+      } else { P.cur = nb; render(); const f = fb(); f.className = 'feedback good'; f.textContent = 'Correct! Next gap.'; }
+    } else {
+      missed = true; T.v = ''; shake(qEl); const f = fb(); f.className = 'feedback bad'; f.textContent = 'Not quite. Try the hint.'; showHint();
+    }
+  }
+  next();
+}
+
+/* ---------- Make 1 and 10 ---------- */
+function hundredGrid(filled){
+  return `<div class="y5-hg" aria-hidden="true">${Array.from({length:100}, (_, i) => `<i class="${i < filled ? 'on' : ''}"></i>`).join('')}</div>`;
+}
+function lessonBonds(host){
+  head(host, 'Make 1 and make 10', 'Some decimals fit together perfectly. 1 whole is 100 hundredths, so 0.37 + 0.63 = 1. To make 10, first fill up to the next whole number.');
+  dquiz(host, {kind:'bonds', levels:[['one','Make 1'],['ten','Make 10']], make(level){
+    if (level === 'one'){
+      const n = rnd(0, 1) ? rnd(1, 9) * 10 : rnd(1, 99);
+      return {html:`<div class="problem small">${fh(n)} + <span class="mbox">?</span> = 1</div>`, ans:(100 - n) * 10,
+        hint:`${hundredGrid(n)}<p>${fh(n)} is ${n} hundredths (shaded). 100 − ${n} = ${100 - n} empty squares.</p>`,
+        explain:`${fh(n)} + ${fh(100 - n)} = 1`, after: hundredGrid(n)};
+    }
+    const w = rnd(1, 9), f = rnd(0, 1) ? rnd(1, 9) * 10 : rnd(1, 99), a = w * 100 + f, need = 100 - f;
+    return {html:`<div class="problem small">${fh(a)} + <span class="mbox">?</span> = 10</div>`, ans:(1000 - a) * 10,
+      hint:`<p>Count up in two hops: ${fh(a)} + <b>${fh(need)}</b> = ${w + 1}, then ${w + 1} + <b>${9 - w}</b> = 10.</p>`,
+      explain:`${fh(a)} + ${fh(1000 - a)} = 10`};
+  }});
+  tapChallenge(host, {kind:'bonds', max:2, title:'Challenge: tick the two numbers that total 10', tryMsg: () => 'Not those two. Add them up: do you get exactly 10?', showWhyOnMiss:false,
+    make(){
+      for (let g = 0; g < 300; g++){
+        const p = rnd(5, 9) * 100 + (rnd(0, 1) ? rnd(1, 9) * 10 : rnd(1, 99)), q = 1000 - p;
+        const pool = [...new Set([q + 10, q + 100, p - 9 * (p % 10 ? 1 : 10), p - 90, q + 1, q - 1, p + 1, 1000 - p + 90].filter(v => v > 0 && v < 1000 && v !== p && v !== q))];
+        if (pool.length < 4) continue;
+        const ds = shuffle(pool).slice(0, 4), all = [p, q, ...ds];
+        let pairs = 0; for (let i = 0; i < all.length; i++) for (let j = i + 1; j < all.length; j++) if (all[i] + all[j] === 1000) pairs++;
+        if (pairs !== 1 || new Set(all).size !== 6) continue;
+        const items = shuffle(all.map(v => ({v, good: v === p || v === q, label: fh(v)})));
+        return {q:'Tick the <b>two</b> numbers that total <b>10</b>.', items, why:`<p class="explain">${fh(p)} + ${fh(q)} = 10 ✓</p>`};
+      }
+    }});
+}
+
+/* ---------- Add and subtract decimals ---------- */
+const dpOf = n => (fd(n).split('.')[1] || '').length;
+function colHTML(rows, sign, ansRow){
+  const dp = Math.max(...rows.concat(ansRow == null ? [] : [ansRow]).map(dpOf));
+  const strs = rows.concat(ansRow == null ? [] : [ansRow]).map(n => {
+    const own = dpOf(n), s = (n / 1000).toFixed(dp);
+    return {s, pad: dp - own};
+  });
+  const wmax = Math.max(...strs.map(o => o.s.length));
+  const line = (o, op, cls) => {
+    const sp = wmax - o.s.length; let cells = `<span class="op">${op}</span>` + '<span></span>'.repeat(sp);
+    [...o.s].forEach((ch, i) => { const zero = i >= o.s.length - o.pad; cells += `<span class="${ch === '.' ? 'pt' : ''}${zero ? ' z' : ''}">${ch}</span>`; });
+    return `<div class="y5-crow ${cls || ''}" style="grid-template-columns:repeat(${wmax + 1}, 1.1em)">${cells}</div>`;
+  };
+  let out = `<div class="y5-col">` + line(strs[0], '') + line(strs[1], sign);
+  out += `<div class="y5-cline"></div>`;
+  if (ansRow != null) out += line(strs[2], '', 'ans');
+  out += '</div>';
+  if (strs.some(o => o.pad)) out += `<p class="small center">Faded zeros are added so every number has the same number of decimal places.</p>`;
+  return out;
+}
+function genDec(maxW, dp){ const unit = Math.pow(10, 3 - dp); let f; do { f = rnd(0, Math.pow(10, dp) - 1); } while (f % 10 === 0 && dp > 1 && rnd(0, 2)); return rnd(1, maxW) * 1000 + f * unit; }
+function lessonDcol(host){
+  head(host, 'Add and subtract decimals', 'Line up the decimal points, one under the other. Fill empty places with zeros. Then add or subtract column by column from the right, just like whole numbers.');
+  dquiz(host, {kind:'dcol', levels:[['add','Add'],['sub','Subtract'],['miss','Missing number']], make(level){
+    if (level === 'add'){
+      const a = genDec(200, rnd(1, 2)), b = genDec(60, rnd(2, 3)), s = a + b;
+      return {html:`<div class="problem small">${fd(a)} + ${fd(b)} = <span class="mbox">?</span></div>`, ans:s,
+        hint:`<p>Line up the points:</p>${colHTML([a, b], '+')}`, explain:`${fd(a)} + ${fd(b)} = ${fd(s)}`, after: colHTML([a, b], '+', s)};
+    }
+    if (level === 'sub'){
+      let a, b; do { a = genDec(99, rnd(1, 3)); b = genDec(60, rnd(1, 3)); } while (b >= a);
+      return {html:`<div class="problem small">${fd(a)} − ${fd(b)} = <span class="mbox">?</span></div>`, ans:a - b,
+        hint:`<p>Line up the points. If a top digit is too small, exchange from the column to its left.</p>${colHTML([a, b], '−')}`, explain:`${fd(a)} − ${fd(b)} = ${fd(a - b)}`, after: colHTML([a, b], '−', a - b)};
+    }
+    let a, c; do { a = genDec(30, 3); c = genDec(15, 1); } while (c >= a);
+    const ans = a - c;
+    if (rnd(0, 1)) return {html:`<div class="problem small">${fd(a)} − <span class="mbox">?</span> = ${fd(c)}</div>`, ans,
+      hint:`<p>Use the inverse: ? = ${fd(a)} − ${fd(c)}</p>${colHTML([a, c], '−')}`, explain:`${fd(a)} − ${fd(ans)} = ${fd(c)}. Check: ${fd(c)} + ${fd(ans)} = ${fd(a)} ✓`};
+    return {html:`<div class="problem small"><span class="mbox">?</span> + ${fd(c)} = ${fd(a)}</div>`, ans,
+      hint:`<p>Use the inverse: ? = ${fd(a)} − ${fd(c)}</p>${colHTML([a, c], '−')}`, explain:`${fd(ans)} + ${fd(c)} = ${fd(a)} ✓`};
+  }});
+}
+
+/* ---------- Number clue puzzles ---------- */
+function makeDigitPuzzle(){
+  const u = rnd(1, 4), hd = 2 * u, t = rnd(0, 6), k = rnd(1, Math.min(4, 9 - t)), th = t + k, S = th + hd + t + u, N = th * 1000 + hd * 100 + t * 10 + u;
+  const rest = k + hd + u;
+  return {ans:N, clues:['I am thinking of a four-digit number.', `The hundreds digit is ${hd}.`, 'The hundreds digit is double the units digit.', `The thousands digit is ${k} more than the tens digit.`, `All four digits total ${S}.`],
+    places:{Th:th, H:hd, T:t, U:u},
+    steps:[
+      {fill:['H'], text:`Hundreds digit: H = <b>${hd}</b>`},
+      {fill:['U'], text:`Hundreds is double units: ${hd} = 2 × U, so U = <b>${u}</b>`},
+      {fill:[], text:`Thousands is ${k} more than tens: Th = T + ${k}`},
+      {fill:['T'], text:`Add all digits: (T + ${k}) + ${hd} + T + ${u} = ${S}<br>2 × T + ${rest} = ${S} → 2 × T = ${S - rest} → T = <b>${t}</b>`},
+      {fill:['Th'], text:`Th = ${t} + ${k} = <b>${th}</b>. The number is <b>${N}</b>. Check: ${th} + ${hd} + ${t} + ${u} = ${S} ✓`}
+    ]};
+}
+function makeMultiplePuzzle(){
+  for (let g = 0; g < 500; g++){
+    const m = pick([25, 15, 35, 45, 25]), lo = rnd(2, 18) * 50, hi = lo + pick([100, 150, 200]);
+    const cands = []; for (let v = Math.ceil((lo + 1) / m) * m; v < hi; v += m) cands.push(v);
+    const par = pick(['even', 'odd']), keep = cands.filter(v => (v % 2 === 0) === (par === 'even'));
+    if (cands.length < 3 || cands.length > 7 || keep.length !== 2) continue;
+    const ex = pick(keep), ans = keep.find(v => v !== ex);
+    return {ans, cands, keep, ex, clues:[`It is a multiple of ${m}.`, `It is ${par}.`, `It is greater than ${lo} but less than ${hi}.`, `It is not ${ex}.`],
+      steps:[
+        {cross:[], text:`Multiples of ${m} between ${lo} and ${hi}: ${cands.join(', ')}`},
+        {cross:cands.filter(v => !keep.includes(v)), text:`It is ${par}: ${par === 'even' ? 'even numbers end in 0, 2, 4, 6 or 8' : 'odd numbers end in 1, 3, 5, 7 or 9'}. Cross out the rest.`},
+        {cross:[ex], text:`It is not ${ex}: cross it out. Only <b>${ans}</b> is left!`}
+      ]};
+  }
+}
+function lessonClues(host){
+  head(host, 'Number clue puzzles', 'Read every clue. Start with the clue that tells you the most, then use the others one by one. Tap <b>Help me</b> to see the next step.');
+  const S = SM.S(); S.glevel = S.glevel || {}; let level = S.glevel.clues || 'digits';
+  const top = h('div', 'controls');
+  top.appendChild(seg([['digits','Digit puzzle'],['multiple','Multiple puzzle']], level, v => { level = v; S.glevel.clues = v; SM.save(); next(); }));
+  const meter = h('div', 'meter'); meter.innerHTML = 'Solved <b>0</b>'; top.appendChild(meter);
+  const area = h('div', 'q-area'), qEl = h('div', 'q wq'), pad = h('div', 'pad');
+  area.append(qEl, pad); host.append(top, area);
+  let P, shown = 0, right = 0, missed = false;
+  const T = typer(v => { const a = qEl.querySelector('.answer'); if (a){ a.textContent = v || '?'; a.classList.toggle('empty', !v); } }, 5);
+  T.go = () => { if (T.locked) { next(); return; } if (T.v) check(); };
+  dpad(pad, T);
+  function next(){
+    P = level === 'digits' ? makeDigitPuzzle() : makeMultiplePuzzle();
+    shown = 0; missed = false; T.locked = false; T.v = ''; padTarget = T;
+    qEl.className = 'q wq';
+    qEl.innerHTML = `<div class="y5-bubble">${P.clues.map(c => `<p>${c}</p>`).join('')}</div><div class="y5-work"></div>
+      <div class="ansrow">Number: <span class="answer empty">?</span></div><div class="feedback" aria-live="polite"></div>
+      <div class="row"><button class="btn ghost small hb">Help me: next step</button></div>`;
+    qEl.querySelector('.hb').onclick = help;
+    drawWork();
+  }
+  function drawWork(){
+    const w = qEl.querySelector('.y5-work'); if (!w) return;
+    let vis = '';
+    if (P.places){
+      const filled = new Set(P.steps.slice(0, shown).flatMap(s => s.fill));
+      vis = `<div class="y5-pv">${['Th','H','T','U'].map(p => `<div class="${filled.has(p) ? 'on' : ''}"><small>${p}</small><b>${filled.has(p) ? P.places[p] : '?'}</b></div>`).join('')}</div>`;
+    } else if (shown){
+      const crossed = new Set(P.steps.slice(0, shown).flatMap(s => s.cross));
+      vis = `<div class="y5-chips">${P.cands.map(v => `<span class="y5-chip ${crossed.has(v) ? 'x' : ''} ${shown === P.steps.length && v === P.ans ? 'ok' : ''}">${v}</span>`).join('')}</div>`;
+    }
+    w.innerHTML = vis + (shown ? `<ol class="y5-steps">${P.steps.slice(0, shown).map(s => `<li>${s.text}</li>`).join('')}</ol>` : '');
+  }
+  function help(){ if (shown < P.steps.length){ shown++; missed = true; drawWork(); } }
+  function check(){
+    const fb = qEl.querySelector('.feedback');
+    if (+T.v === P.ans){
+      T.locked = true; right++; meter.innerHTML = `Solved <b>${right}</b>`; shown = P.steps.length; drawWork();
+      qEl.classList.add('good'); fb.className = 'feedback good'; fb.textContent = `Correct, the number is ${P.ans}!` + (missed ? ' +1 star' : ' +3 stars, solved on your own!');
+      reward(missed ? 1 : 3, 'clues');
+      const r = qEl.querySelector('.row'); r.innerHTML = ''; r.appendChild(btn('Next puzzle', '', next));
+    } else {
+      T.v = ''; shake(qEl); fb.className = 'feedback bad'; fb.textContent = 'Not quite. Check your number against every clue, or tap Help me.';
+    }
+  }
+  next();
+}
+
+/* ---------- Cube numbers ---------- */
+function isoCube(n){
+  const s = Math.max(14, Math.min(30, Math.floor(150 / n))), a = s * 0.866, b = s * 0.5;
+  const P = (x, y, z) => [(x - y) * a, (x + y) * b - z * s];
+  const pts = arr => arr.map(p => P(...p).map(v => v.toFixed(1)).join(',')).join(' ');
+  let polys = '';
+  for (let z = 0; z < n; z++) for (let x = 0; x < n; x++) for (let y = 0; y < n; y++){
+    const L = z % 2 ? 'b' : 'a';
+    polys += `<polygon class="y5-c ${L} top" points="${pts([[x,y,z+1],[x+1,y,z+1],[x+1,y+1,z+1],[x,y+1,z+1]])}"/>`;
+    polys += `<polygon class="y5-c ${L} rt" points="${pts([[x+1,y,z],[x+1,y+1,z],[x+1,y+1,z+1],[x+1,y,z+1]])}"/>`;
+    polys += `<polygon class="y5-c ${L} lf" points="${pts([[x,y+1,z],[x+1,y+1,z],[x+1,y+1,z+1],[x,y+1,z+1]])}"/>`;
+  }
+  const minX = -n * a - 2, maxX = n * a + 2, minY = -n * s - 2, maxY = 2 * n * b + 2;
+  return `<svg class="y5-iso" viewBox="${minX.toFixed(0)} ${minY.toFixed(0)} ${(maxX - minX).toFixed(0)} ${(maxY - minY).toFixed(0)}" role="img" aria-label="${n} by ${n} by ${n} cube made of ${n ** 3} small cubes">${polys}</svg>`;
+}
+function lessonCubes(host){
+  head(host, 'Cube numbers', 'A cube number is a number multiplied by itself <b>three</b> times. The small blocks build a perfect cube: n layers, and each layer is an n × n square.');
+  let n = 3;
+  const top = h('div', 'controls'); top.appendChild(stepper('Side length', n, 1, 6, v => { n = v; draw(); }, 'a'));
+  const pic = h('div', 'y5-isobox'), say = h('p', 'explain');
+  host.append(top, pic, say);
+  function draw(){
+    pic.innerHTML = isoCube(n);
+    say.innerHTML = `<b>${n} × ${n} × ${n}</b> = ${n * n} × ${n} = <b>${n ** 3}</b><br>Each layer has ${n} × ${n} = ${n * n} blocks, and there are ${n} layers (the colours swap each layer). We say “${n} cubed”, written ${n}³.`;
+    reward(0, null);
+  }
+  draw();
+  host.appendChild(h('div', 'y5-chips', Array.from({length:10}, (_, i) => `<span class="y5-chip">${i + 1}³ = ${(i + 1) ** 3}</span>`).join('')));
+  host.appendChild(h('div', 'tip', `<span class="t">Square or cube?</span><p>Square = number × itself (2 times). Cube = number × itself × itself (3 times). <b>64</b> is both: 8 × 8 = 64 and 4 × 4 × 4 = 64. So is 1!</p>`));
+  dquiz(host, {kind:'cubes', levels:[['cube','Work out the cube'],['root','Which number was cubed?']], make(level){
+    const k = rnd(1, 10);
+    if (level === 'cube') return {html:`<div class="problem small">${k}³ = <span class="mbox">?</span></div>`, ans:k ** 3 * 1000,
+      hint:`<p>${k}³ = ${k} × ${k} × ${k}. First ${k} × ${k} = ${k * k}, then × ${k}.</p>`, explain:`${k} × ${k} × ${k} = ${k ** 3}`};
+    return {html:`<div class="problem small"><span class="mbox">?</span>³ = ${k ** 3}</div>`, ans:k * 1000,
+      hint:`<p>Try numbers: which number × itself × itself makes ${k ** 3}? Look at the list of cube numbers above.</p>`, explain:`${k} × ${k} × ${k} = ${k ** 3}`};
+  }});
 }
 
 /* ---------- start ---------- */
