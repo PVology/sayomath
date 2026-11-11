@@ -1,6 +1,6 @@
 /* Saif Math offline support: keep a copy of the app so it opens without internet.
    Bump VERSION whenever any file below changes. */
-const VERSION = 'saifmath-v5';
+const VERSION = 'saifmath-v6';
 const FILES = [
   './', 'index.html', 'lessons.js?v=4', 'manifest.webmanifest',
   'logo/favicon.svg', 'logo/saifmath-icon.svg',
