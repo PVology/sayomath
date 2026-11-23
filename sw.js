@@ -1,8 +1,8 @@
 /* Saif Math offline support: keep a copy of the app so it opens without internet.
    Bump VERSION whenever any file below changes. */
-const VERSION = 'saifmath-v7';
+const VERSION = 'saifmath-v8';
 const FILES = [
-  './', 'index.html', 'lessons.js?v=5', 'manifest.webmanifest',
+  './', 'index.html', 'lessons.js?v=5', 'stats.js?v=1', 'manifest.webmanifest',
   'logo/favicon.svg', 'logo/saifmath-icon.svg',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png', 'icons/apple-touch-icon.png'
 ];
@@ -22,6 +22,9 @@ self.addEventListener('fetch', e => {
   if (url.origin !== location.origin && !isFont) return;
   // The page itself: try the network first so updates show up, fall back to the saved copy offline.
   if (req.mode === 'navigate') {
+    // Only the app's own page is saved; other pages (like monitor/) just load from the network.
+    const root = new URL('./', self.registration.scope).pathname;
+    if (url.pathname !== root && url.pathname !== root + 'index.html') return;
     e.respondWith(fetch(req).then(res => {
       const copy = res.clone(); caches.open(VERSION).then(c => c.put('index.html', copy)); return res;
     }).catch(() => caches.match('index.html')));

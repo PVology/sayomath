@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Saif Math Monitor</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/svg+xml" href="../logo/favicon.svg">
+<meta name="theme-color" content="#3E4FD8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+:root{
+  --paper:#F4F7F2; --grid:#DCE6DA; --card:#FFFFFF; --ink:#18303A; --muted:#5D7178; --line:#D3DDD6;
+  --accent:#1C6FD1; --accent-ink:#FFFFFF; --sun:#F5B629; --sun-soft:#FFF1C9; --good:#1E9E62; --good-soft:#DDF4E7;
+  --bad:#D9483B; --track:#E7EDE8; --l1:#FBD3CD; --l2:#FFE29A; --l3:#36B37E;
+  --display:"Fredoka","Nunito",ui-rounded,system-ui,sans-serif;
+  --body:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0F1A1F; --grid:#18272D; --card:#16242A; --ink:#E6F0EE; --muted:#93A7AB; --line:#26383F;
+  --accent:#5AA2FF; --accent-ink:#06121C; --sun:#F7C04A; --sun-soft:#3A3115; --good:#45C98A; --good-soft:#123326;
+  --bad:#FF7A6B; --track:#22343B; --l1:#5A2A25; --l2:#6B5418; --l3:#2FA36F; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0F1A1F; --grid:#18272D; --card:#16242A; --ink:#E6F0EE; --muted:#93A7AB; --line:#26383F;
+  --accent:#5AA2FF; --accent-ink:#06121C; --sun:#F7C04A; --sun-soft:#3A3115; --good:#45C98A; --good-soft:#123326;
+  --bad:#FF7A6B; --track:#22343B; --l1:#5A2A25; --l2:#6B5418; --l3:#2FA36F; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background-color:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:28px 28px;min-height:100vh}
+h1,h2,h3{font-family:var(--display);margin:0;font-weight:600;text-wrap:balance}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+.wrap{max-width:920px;margin:0 auto;padding:20px max(16px,env(safe-area-inset-left,0px)) 56px;display:flex;flex-direction:column;gap:18px}
+.card{background:var(--card);border:2px solid var(--line);border-radius:22px;padding:20px;box-shadow:0 4px 0 var(--line)}
+.sub{color:var(--muted);margin:4px 0 0;font-size:15px}
+
+/* Lock screen */
+#lock{min-height:100vh;display:grid;place-items:center;padding:16px}
+#lock .card{max-width:380px;width:100%;text-align:center;display:flex;flex-direction:column;gap:14px;align-items:center}
+#lock img{width:140px;height:auto}
+#lock .big{font-size:54px;line-height:1}
+#pw{width:100%;font-size:26px;text-align:center;letter-spacing:6px;text-transform:uppercase;padding:12px;border-radius:16px;border:3px solid var(--line);background:var(--paper)}
+.go{background:var(--accent);color:var(--accent-ink);border:0;border-radius:16px;padding:12px 28px;font-family:var(--display);font-size:22px;font-weight:600;box-shadow:0 4px 0 rgba(0,0,0,.18)}
+.go:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.18)}
+#pwMsg{min-height:24px;color:var(--bad);font-weight:700;margin:0}
+.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+
+/* Header */
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px}
+.brand img{width:62px;height:62px}
+.brand h1{font-size:30px;line-height:1.1}
+.brand h1 span{color:var(--sun)}
+.hbtns{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border:2px solid var(--line);background:var(--card);border-radius:999px;padding:6px 14px;font-weight:800;font-size:14px;text-decoration:none;color:var(--ink)}
+
+/* Section titles */
+.sec{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.sec h2{font-size:24px}
+.tag{font-size:13px;font-weight:800;border-radius:999px;padding:3px 10px;background:var(--sun-soft);color:var(--ink)}
+.tag.cloud{background:var(--good-soft)}
+
+/* Big number tiles */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.tile{border-radius:18px;padding:14px 12px;text-align:center;background:var(--paper);border:2px solid var(--line);position:relative;overflow:hidden}
+.tile .em{font-size:38px;line-height:1.1;display:block}
+.tile .num{font-family:var(--display);font-size:40px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums;display:block}
+.tile .lbl{font-weight:800;color:var(--muted);font-size:14px}
+.tile::before{content:"";position:absolute;inset:0 0 auto 0;height:6px;background:var(--c,var(--accent))}
+
+/* Player picker */
+.players{display:flex;gap:10px;flex-wrap:wrap}
+.pbtn{display:flex;align-items:center;gap:8px;border:3px solid var(--line);background:var(--card);border-radius:999px;padding:5px 14px 5px 5px;font-weight:800}
+.pbtn[aria-pressed="true"]{border-color:var(--accent);background:var(--sun-soft)}
+.av{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:#fff;font-family:var(--display);font-weight:700}
+
+/* Rings */
+.rings{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px}
+.ring{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px}
+.ring svg{width:140px;height:140px}
+.ring .rt{font-family:var(--display);font-size:30px;font-weight:700;fill:var(--ink)}
+.ring .rs{font-size:13px;font-weight:700;fill:var(--muted)}
+.ring b{font-size:16px}
+
+/* Done counters */
+.done{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-top:16px}
+.dc{display:flex;align-items:center;gap:12px;background:var(--paper);border:2px solid var(--line);border-radius:16px;padding:10px 12px}
+.dc .em{font-size:30px}
+.dc .n{font-family:var(--display);font-size:26px;font-weight:700;line-height:1}
+.dc small{display:block;color:var(--muted);font-weight:700}
+
+/* Seg control */
+.seg{display:inline-flex;background:var(--paper);border:2px solid var(--line);border-radius:999px;padding:3px;gap:2px;flex-wrap:wrap}
+.seg button{border:0;background:none;border-radius:999px;padding:5px 12px;font-weight:800;font-size:14px}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+
+/* Day chart */
+.chart{position:relative}
+.chart svg{width:100%;height:auto;display:block;overflow:visible}
+.chart .gl{stroke:var(--line);stroke-width:1}
+.chart .ax{fill:var(--muted);font-size:12px;font-weight:700}
+.chart .bar{fill:var(--accent)}
+.chart .bar.today{fill:var(--sun)}
+.chart .hit{fill:transparent}
+.chart .hit:hover + .bar,.chart g:hover .bar{opacity:.8}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--paper);padding:6px 10px;border-radius:10px;font-weight:800;font-size:14px;white-space:nowrap;transform:translate(-50%,-110%)}
+.empty{color:var(--muted);text-align:center;padding:26px 8px;font-weight:700}
+.empty .em{font-size:44px;display:block}
+
+/* Lessons */
+.lgrp{margin-top:14px}
+.lgrp h3{font-size:18px;display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.lgrp h3 i{width:14px;height:14px;border-radius:4px;background:var(--c)}
+.lrow{display:grid;grid-template-columns:40px minmax(0,1fr) 46px;align-items:center;gap:10px;padding:5px 0}
+.lic{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;color:#fff;font-weight:800;font-size:16px;background:var(--c)}
+.lname{font-weight:800;font-size:15px;display:flex;gap:6px;align-items:center;min-width:0}
+.lname span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ltrack{height:12px;background:var(--track);border-radius:999px;margin-top:4px;overflow:hidden}
+.ltrack i{display:block;height:100%;border-radius:999px;background:var(--c);min-width:0}
+.lnum{font-family:var(--display);font-size:20px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
+.tick{color:var(--good);font-size:16px}
+
+/* Fun facts */
+.fun{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.ff{background:var(--sun-soft);border-radius:18px;padding:14px;display:flex;gap:12px;align-items:center}
+.ff .em{font-size:36px}
+.ff b{display:block;font-family:var(--display);font-size:19px;font-weight:600;line-height:1.2}
+.ff small{color:var(--muted);font-weight:700}
+
+/* Facts map */
+.map{display:grid;grid-template-columns:repeat(13,minmax(0,1fr));gap:3px;max-width:520px;margin:0 auto}
+.map div{aspect-ratio:1;border-radius:5px;display:grid;place-items:center;font-size:11px;font-weight:800;background:var(--track);color:var(--muted)}
+.map .h{background:none;font-family:var(--display);font-size:14px;color:var(--ink)}
+.map .v1{background:var(--l1);color:var(--ink)}.map .v2{background:var(--l2);color:var(--ink)}.map .v3{background:var(--l3);color:#fff}
+.legend{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:12px;font-weight:700;font-size:14px;color:var(--muted)}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:4px;vertical-align:-2px;margin-right:5px}
+
+/* Leaderboard */
+.board{display:flex;flex-direction:column;gap:10px}
+.pl{display:grid;grid-template-columns:auto 48px minmax(0,1fr);gap:12px;align-items:center;background:var(--paper);border:2px solid var(--line);border-radius:18px;padding:10px 14px}
+.pl .rank{font-size:28px;width:34px;text-align:center}
+.pl .av{width:48px;height:48px;font-size:22px}
+.pl b{font-family:var(--display);font-size:20px;font-weight:600}
+.pl .row{display:flex;gap:12px;flex-wrap:wrap;font-weight:800;font-size:14px;color:var(--muted)}
+.note{font-size:13px;color:var(--muted);text-align:center;margin:0}
+@media (max-width:520px){.brand h1{font-size:24px}.tile .num{font-size:32px}.map div{font-size:9px;border-radius:3px}.map{gap:2px}}
+</style>
+</head>
+<body>
+
+<div id="lock">
+  <form class="card" id="lockForm" autocomplete="off">
+    <img src="../logo/saifmath-logo.svg" alt="Saif Math">
+    <span class="big" aria-hidden="true">🔒</span>
+    <h2>Monitor room</h2>
+    <p class="sub" style="margin:0">Type the secret password to see how everyone is doing.</p>
+    <label for="pw" class="sub" style="position:absolute;left:-9999px">Password</label>
+    <input id="pw" type="password" inputmode="text" autocapitalize="characters" spellcheck="false" maxlength="20">
+    <button class="go" type="submit">Open 🔑</button>
+    <p id="pwMsg" role="alert"></p>
+  </form>
+</div>
+
+<div class="wrap" id="app" hidden>
+  <header>
+    <div class="brand">
+      <img src="../logo/saifmath-icon.svg" alt="">
+      <div><h1>Saif Math <span>Monitor</span></h1><p class="sub" id="updated">Loading…</p></div>
+    </div>
+    <div class="hbtns">
+      <button class="chip" id="refresh" type="button">🔄 Refresh</button>
+      <a class="chip" href="../">🎮 Open the app</a>
+      <button class="chip" id="lockBtn" type="button">🔒 Lock</button>
+    </div>
+  </header>
+
+  <section class="card" id="cloudCard">
+    <div class="sec"><h2>🌍 Everyone, on every device</h2><span class="tag cloud">All phones, tablets and computers</span></div>
+    <div class="tiles" id="cloudTiles"></div>
+    <p class="note" id="cloudNote" style="margin-top:12px"></p>
+  </section>
+
+  <section class="card">
+    <div class="sec"><h2>📱 On this device</h2><span class="tag" id="sinceTag"></span></div>
+    <div class="tiles" id="devTiles"></div>
+  </section>
+
+  <section class="card">
+    <div class="sec"><h2>📅 Last 14 days</h2>
+      <div class="seg" id="daySeg" role="group" aria-label="What to show"></div></div>
+    <div class="chart" id="dayChart"></div>
+  </section>
+
+  <section class="card">
+    <div class="sec"><h2>🏆 Who is playing?</h2><span class="tag">Players on this device</span></div>
+    <div class="board" id="board"></div>
+  </section>
+
+  <section class="card">
+    <div class="sec"><h2>✅ How much is done</h2></div>
+    <div class="players" id="pPick" role="group" aria-label="Choose a player" style="margin-bottom:16px"></div>
+    <div class="rings" id="rings"></div>
+    <div class="done" id="doneList"></div>
+  </section>
+
+  <section class="card">
+    <div class="sec"><h2>📚 Lessons used</h2><div class="seg" id="lessSeg" role="group" aria-label="Which count"></div></div>
+    <p class="sub" id="lessNote" style="margin-top:-6px"></p>
+    <div id="lessons"></div>
+  </section>
+
+  <section class="card">
+    <div class="sec"><h2>✨ Fun facts</h2></div>
+    <div class="fun" id="fun"></div>
+  </section>
+
+  <section class="card">
+    <div class="sec"><h2>🗺️ Times-table map</h2><span class="tag" id="mapWho"></span></div>
+    <div class="map" id="map" role="img" aria-label="Times-table map"></div>
+    <div class="legend"><span><i style="background:var(--track)"></i>Not tried</span><span><i style="background:var(--l1)"></i>Learning</span><span><i style="background:var(--l2)"></i>Getting there</span><span><i style="background:var(--l3)"></i>Mastered</span></div>
+  </section>
+
+  <p class="note">Player details are saved inside each browser, so this page shows the players of the device it is opened on. The 🌍 numbers are anonymous totals from every device.</p>
+</div>
+
+<script>
+(() => {
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt = n => Number(n || 0).toLocaleString('en-GB');
+const get = k => { try { return localStorage.getItem(k); } catch(e){ return null; } };
+const json = k => { try { return JSON.parse(get(k)); } catch(e){ return null; } };
+const NS = 'saifmath-pvology';
+const COLORS = ['#1C6FD1','#E0702B','#1E9E62','#8A4FD3','#D9483B','#0E8C99','#C2577F','#6B7A1E'];
+
+/* ---------- Password (a light lock: the page is public, so this keeps out passers-by only) ---------- */
+const HASH = 'e79afa11ab703d6fc4d16d36e0f08debfb9a583f78bf73bf893d22adb03dee16';
+const OKKEY = 'saifmath.monitor.ok';
+async function sha(s){
+  if (window.crypto && crypto.subtle) {
+    const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
+    return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('');
+  }
+  return s === 'SAIFCR' ? HASH : '';
+}
+const ss = {get(k){ try { return sessionStorage.getItem(k); } catch(e){ return null; } }, set(k,v){ try { sessionStorage.setItem(k,v); } catch(e){} }, del(k){ try { sessionStorage.removeItem(k); } catch(e){} }};
+function unlock(){ $('lock').hidden = true; $('app').hidden = false; load(); }
+$('lockForm').onsubmit = async e => {
+  e.preventDefault();
+  const v = $('pw').value.trim().toUpperCase();
+  if (await sha(v) === HASH) { ss.set(OKKEY, '1'); $('pwMsg').textContent = ''; unlock(); }
+  else { $('pwMsg').textContent = 'Oops, that is not it. Try again!'; const f = $('lockForm'); f.classList.remove('shake'); void f.offsetWidth; f.classList.add('shake'); $('pw').select(); }
+};
+$('lockBtn').onclick = () => { ss.del(OKKEY); $('pw').value = ''; $('app').hidden = true; $('lock').hidden = false; $('pw').focus(); };
+if (ss.get(OKKEY) === '1') unlock(); else $('pw').focus();
+
+/* ---------- Lesson list: read from the app's lessons.js so new lessons show up by themselves ---------- */
+const FALLBACK = [
+  ['Times tables','#1C6FD1',[['groups','⠿','Equal groups'],['line','↷','Number line jumps'],['share','🍬','Sharing sweets'],['family','△','Fact families']]],
+  ['Bigger numbers','#E0702B',[['place','×10','× and ÷ by 10, 100, 1000'],['area','▦','Area model'],['column','⊞','Column multiplication'],['short','⟌','Short division'],['long','÷','Long division']]],
+  ['Number facts','#1E9E62',[['multiples','#','Multiples'],['factors','▭','Factors'],['primes','★','Prime numbers'],['squares','■','Square numbers'],['cubes','³','Cube numbers']]],
+  ['Decimals','#D9485F',[['round','≈','Rounding decimals'],['dseq','+','Decimal sequences'],['bonds','1','Make 1 and make 10'],['dcol','.','Add and subtract decimals']]],
+  ['Problem solving','#8A4FD3',[['missing','?','Missing numbers'],['words','✎','Word problems'],['clues','🔍','Number clue puzzles']]]
+].map(([title, color, items]) => ({title, color, items: items.map(([id, icon, name]) => ({id, icon, name}))}));
+async function lessonGroups(){
+  try {
+    const r = await fetch('../lessons.js', {cache:'no-cache'});
+    const src = await r.text();
+    const block = src.slice(src.indexOf('const GROUPS'), src.indexOf('const ALL'));
+    const re = /\{title:'([^']*)',\s*color:'(#[0-9A-Fa-f]{3,6})'|\{id:'([a-z0-9]+)',\s*icon:'([^']*)',\s*name:'([^']*)'/g;
+    const out = []; let m;
+    while ((m = re.exec(block))) {
+      if (m[1] != null) out.push({title:m[1], color:m[2], items:[]});
+      else if (out.length) out[out.length - 1].items.push({id:m[3], icon:m[4], name:m[5]});
+    }
+    if (out.length && out.reduce((s, g) => s + g.items.length, 0) >= 10) return out;
+  } catch(e){}
+  return FALLBACK;
+}
+
+/* ---------- Shared totals from every device ---------- */
+async function cloudGet(key){
+  try {
+    const r = await fetch(`https://abacus.jasoncameron.dev/get/${NS}/${key}`, {cache:'no-store'});
+    if (r.status === 404) return 0;
+    if (!r.ok) return null;
+    const d = await r.json(); return Number(d.value) || 0;
+  } catch(e){ return null; }
+}
+
+/* ---------- Reading this device ---------- */
+const dayStr = d => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+const fk = (a, b) => a + 'x' + b;
+const lvOf = r => !r ? 0 : r.s >= 3 ? 3 : r.c > r.w ? 2 : 1;
+function readPlayers(){
+  const P = json('saifmath.players');
+  const list = P && Array.isArray(P.list) && P.list.length ? P.list : [{id:'p1', name:'Player 1', c:0}];
+  return list.map(p => {
+    const S = json(p.id === 'p1' ? 'sayomath.v1' : 'sayomath.v1.' + p.id) || {};
+    const facts = S.facts || {}, dfacts = S.dfacts || {};
+    let mastered = 0; for (let a = 1; a <= 12; a++) for (let b = 1; b <= 12; b++) if (lvOf(facts[fk(a,b)]) === 3) mastered++;
+    const all = [...Object.values(facts), ...Object.values(dfacts)];
+    const right = all.reduce((s, f) => s + (f.c || 0), 0), wrong = all.reduce((s, f) => s + (f.w || 0), 0);
+    const days = S.days || {};
+    const t = dayStr(new Date()), y = (() => { const d = new Date(); d.setDate(d.getDate() - 1); return dayStr(d); })();
+    return {id:p.id, name:p.name || 'Player', color:COLORS[(p.c || 0) % COLORS.length], S, facts,
+      mastered, right, wrong, answers:right + wrong, stars:S.stars || 0, badges:Object.keys(S.badges || {}).length,
+      lessons:S.lessons || {}, done:S.done || {}, streak:(days.last === t || days.last === y) ? days.n || 0 : 0,
+      bestStreak:days.best || 0, best:S.best, bestCh:S.bestCh || 0, bestRun:S.bestRun || 0, divRight:S.divRight || 0};
+  });
+}
+const initial = n => (Array.from(String(n).trim())[0] || '?').toUpperCase();
+
+/* ---------- Drawing helpers ---------- */
+const tile = (em, num, lbl, c) => `<div class="tile" style="--c:${c}"><span class="em" aria-hidden="true">${em}</span><span class="num">${num}</span><span class="lbl">${lbl}</span></div>`;
+function ring(val, max, label, color, sub){
+  const pct = max ? Math.min(1, val / max) : 0, r = 56, C = 2 * Math.PI * r;
+  return `<div class="ring"><svg viewBox="0 0 140 140" role="img" aria-label="${esc(label)}: ${val} of ${max}">
+    <circle cx="70" cy="70" r="${r}" fill="none" stroke="var(--track)" stroke-width="16"/>
+    <circle cx="70" cy="70" r="${r}" fill="none" stroke="${color}" stroke-width="16" stroke-linecap="round"
+      stroke-dasharray="${(C * pct).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 70 70)"/>
+    <text x="70" y="72" text-anchor="middle" class="rt">${val}</text>
+    <text x="70" y="94" text-anchor="middle" class="rs">of ${max}</text></svg>
+    <b>${esc(label)}</b>${sub ? `<span class="sub" style="margin:0">${sub}</span>` : ''}</div>`;
+}
+function seg(el, items, value, onPick){
+  const draw = () => { el.innerHTML = ''; items.forEach(([v, l]) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = l; b.setAttribute('aria-pressed', v === value); b.onclick = () => { value = v; draw(); onPick(v); }; el.appendChild(b); }); };
+  draw();
+}
+
+/* ---------- State ---------- */
+let players = [], T = {}, groups = FALLBACK, cloud = {}, who = 'all', dayMetric = 'visits', lessMode = 'all';
+
+async function load(){
+  $('updated').textContent = 'Loading…';
+  players = readPlayers();
+  T = json('saifmath.stats') || {};
+  ['visits','mins','ans','quiz','opens','tabs'].forEach(k => T[k] = T[k] || {});
+  if (who !== 'all' && !players.some(p => p.id === who)) who = 'all';
+  renderLocal();
+  groups = await lessonGroups();
+  renderLessons(); renderFun();
+  const ids = groups.flatMap(g => g.items.map(i => i.id));
+  const keys = ['visits','devices','minutes','quizzes', ...ids.map(i => 'lesson-' + i)];
+  const vals = await Promise.all(keys.map(cloudGet));
+  cloud = {}; keys.forEach((k, i) => cloud[k] = vals[i]);
+  cloud.ok = vals.some(v => v != null);
+  renderCloud(); renderLessons(); renderFun();
+  $('updated').textContent = 'Updated ' + new Date().toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
+}
+$('refresh').onclick = load;
+
+function renderCloud(){
+  const lessonOpens = groups.flatMap(g => g.items).reduce((s, i) => s + (cloud['lesson-' + i.id] || 0), 0);
+  if (!cloud.ok) {
+    $('cloudTiles').innerHTML = `<div class="empty" style="grid-column:1/-1"><span class="em">📡</span>Can't reach the counter right now. Check the internet and press Refresh.</div>`;
+    $('cloudNote').textContent = ''; return;
+  }
+  $('cloudTiles').innerHTML =
+    tile('👀', fmt(cloud.visits), 'Visits', '#1C6FD1') +
+    tile('📱', fmt(cloud.devices), 'Devices', '#0E8C99') +
+    tile('⏱️', fmt(cloud.minutes), 'Minutes played', '#E0702B') +
+    tile('📚', fmt(lessonOpens), 'Lessons opened', '#1E9E62') +
+    tile('🏁', fmt(cloud.quizzes), 'Quizzes finished', '#8A4FD3');
+  $('cloudNote').textContent = 'Counting started on 23 November 2026.';
+}
+
+function sum(o){ return Object.values(o || {}).reduce((s, n) => s + (n || 0), 0); }
+function renderLocal(){
+  const visitDays = Object.keys(T.visits).length;
+  $('sinceTag').textContent = T.first ? 'Counting since ' + new Date(T.first + 'T12:00').toLocaleDateString('en-GB', {day:'numeric', month:'short'}) : 'Counting starts with the next visit';
+  const totalAns = players.reduce((s, p) => s + p.answers, 0);
+  $('devTiles').innerHTML =
+    tile('👀', fmt(sum(T.visits)), 'Visits', '#1C6FD1') +
+    tile('📅', fmt(visitDays), 'Days played', '#0E8C99') +
+    tile('✏️', fmt(totalAns), 'Answers', '#E0702B') +
+    tile('⏱️', fmt(sum(T.mins)), 'Minutes played', '#C2577F') +
+    tile('⭐', fmt(players.reduce((s, p) => s + p.stars, 0)), 'Stars', '#F5B629');
+  renderDays(); renderBoard(); renderPick(); renderDone(); renderMap();
+}
+
+/* Day chart: one measure at a time, one axis. */
+seg($('daySeg'), [['visits','👀 Visits'],['ans','✏️ Answers'],['mins','⏱️ Minutes']], dayMetric, v => { dayMetric = v; renderDays(); });
+function renderDays(){
+  const el = $('dayChart'), data = T[dayMetric] || {}, days = [];
+  for (let i = 13; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); days.push({d, k:dayStr(d), v:data[dayStr(d)] || 0}); }
+  const max = Math.max(...days.map(x => x.v));
+  if (!max) { el.innerHTML = `<div class="empty"><span class="em">🌱</span>Nothing yet. Play in the app and come back!</div>`; return; }
+  const W = 640, H = 220, L = 30, B = 26, top = 18, iw = W - L, ih = H - B - top, bw = iw / 14;
+  const step = Math.max(1, Math.ceil(max / 4)), ymax = step * 4;
+  const unit = {visits:'visit', ans:'answer', mins:'minute'}[dayMetric];
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${unit}s per day, last 14 days">`;
+  for (let g = 0; g <= 4; g++) { const y = top + ih - ih * g / 4; s += `<line class="gl" x1="${L}" x2="${W}" y1="${y}" y2="${y}"/><text class="ax" x="${L - 6}" y="${y + 4}" text-anchor="end">${step * g}</text>`; }
+  days.forEach((x, i) => {
+    const h = ih * x.v / ymax, bx = L + i * bw + bw * 0.18, w = bw * 0.64, y = top + ih - h;
+    const isT = i === 13, lbl = isT ? 'Today' : x.d.toLocaleDateString('en-GB', {weekday:'short'}).slice(0, 2);
+    const tip = `${x.d.toLocaleDateString('en-GB', {weekday:'long', day:'numeric', month:'short'})}: ${x.v} ${unit}${x.v === 1 ? '' : 's'}`;
+    s += `<g data-tip="${esc(tip)}" data-x="${bx + w / 2}" data-y="${y}">`;
+    s += `<rect class="hit" x="${L + i * bw}" y="${top}" width="${bw}" height="${ih}"/>`;
+    if (x.v) s += `<path class="bar${isT ? ' today' : ''}" d="M${bx},${top + ih} V${y + Math.min(4, h)} q0,-4 4,-4 h${w - 8} q4,0 4,4 V${top + ih} Z"/>`;
+    s += `<text class="ax" x="${bx + w / 2}" y="${H - 6}" text-anchor="middle">${lbl}</text></g>`;
+  });
+  s += '</svg><div class="tip" hidden></div>';
+  el.innerHTML = s;
+  const tipEl = el.querySelector('.tip'), svg = el.querySelector('svg');
+  el.querySelectorAll('g[data-tip]').forEach(g => {
+    const showTip = () => { const r = svg.getBoundingClientRect(), k = r.width / W; tipEl.textContent = g.dataset.tip; tipEl.style.left = (+g.dataset.x * k) + 'px'; tipEl.style.top = (+g.dataset.y * k) + 'px'; tipEl.hidden = false; };
+    g.addEventListener('pointerenter', showTip); g.addEventListener('pointerdown', showTip);
+    g.addEventListener('pointerleave', () => tipEl.hidden = true);
+  });
+}
+
+/* Leaderboard */
+function renderBoard(){
+  const order = [...players].sort((a, b) => b.stars - a.stars || b.mastered - a.mastered);
+  const medals = ['🥇','🥈','🥉'];
+  $('board').innerHTML = order.map((p, i) => `<div class="pl">
+    <span class="rank" aria-label="Place ${i + 1}">${medals[i] || '🎈'}</span>
+    <span class="av" style="background:${p.color}">${esc(initial(p.name))}</span>
+    <div><b>${esc(p.name)}</b><div class="row">
+      <span>⭐ ${fmt(p.stars)} stars</span><span>🔥 ${p.streak} day streak</span><span>🏅 ${p.badges} badges</span>
+      <span>🎯 ${p.best ? p.best.score + '/10 best quiz' : 'no quiz yet'}</span><span>⚡ ${p.bestCh} in 60 s</span>
+    </div></div></div>`).join('');
+}
+
+/* Player picker for the "done" part */
+function renderPick(){
+  const items = [{id:'all', name:'Everyone', color:'#F5B629'}, ...players];
+  $('pPick').innerHTML = items.length > 2 || players.length > 1 ? items.map(p => `<button type="button" class="pbtn" data-id="${p.id}" aria-pressed="${p.id === who}">
+    <span class="av" style="background:${p.color}">${p.id === 'all' ? '👪' : esc(initial(p.name))}</span>${esc(p.name)}</button>`).join('') : '';
+  $('pPick').querySelectorAll('button').forEach(b => b.onclick = () => { who = b.dataset.id; renderPick(); renderDone(); renderMap(); renderLessons(); });
+}
+function chosen(){ return who === 'all' ? players : players.filter(p => p.id === who); }
+function bestMastered(list){
+  if (list.length === 1) return list[0].mastered;
+  let n = 0; for (let a = 1; a <= 12; a++) for (let b = 1; b <= 12; b++) if (list.some(p => lvOf(p.facts[fk(a,b)]) === 3)) n++;
+  return n;
+}
+function lessonsTried(list){ const s = new Set(); list.forEach(p => Object.keys(p.lessons).forEach(k => s.add(k))); return s; }
+function renderDone(){
+  const list = chosen(), total = groups.flatMap(g => g.items).length;
+  const right = list.reduce((s, p) => s + p.right, 0), ans = list.reduce((s, p) => s + p.answers, 0);
+  const pct = ans ? Math.round(100 * right / ans) : 0;
+  const badges = who === 'all' ? Math.max(0, ...list.map(p => p.badges)) : list[0].badges;
+  $('rings').innerHTML =
+    ring(bestMastered(list), 144, 'Facts mastered', '#1E9E62', '3 right in a row') +
+    ring(lessonsTried(list).size, total, 'Lessons tried', '#1C6FD1') +
+    ring(badges, 32, who === 'all' ? 'Badges (top player)' : 'Badges', '#F5B629') +
+    ring(pct, 100, 'Right answers %', '#8A4FD3', `${fmt(right)} right of ${fmt(ans)}`);
+  const d = k => list.reduce((s, p) => s + (p.done[k] || 0), 0);
+  const dc = (em, n, l) => `<div class="dc"><span class="em" aria-hidden="true">${em}</span><div><span class="n">${fmt(n)}</span><small>${l}</small></div></div>`;
+  $('doneList').innerHTML =
+    dc('🧮', d('column'), 'Column multiplications') + dc('🚌', d('short'), 'Short divisions') +
+    dc('🦸', d('long'), 'Long divisions') + dc('📖', d('words'), 'Word problems') +
+    dc('➗', list.reduce((s, p) => s + p.divRight, 0), 'Division facts right') +
+    dc('🔥', Math.max(0, ...list.map(p => p.bestRun)), 'Best run in a row');
+}
+
+/* Lessons */
+seg($('lessSeg'), [['all','🌍 All devices'],['dev','📱 This device']], lessMode, v => { lessMode = v; renderLessons(); });
+function renderLessons(){
+  const useCloud = lessMode === 'all' && cloud.ok;
+  const count = id => useCloud ? (cloud['lesson-' + id] || 0) : (T.opens[id] || 0);
+  const all = groups.flatMap(g => g.items), max = Math.max(1, ...all.map(i => count(i.id)));
+  const tried = lessonsTried(chosen());
+  $('lessNote').textContent = (useCloud ? 'Times each lesson was opened on every device.' : 'Times each lesson was opened on this device.')
+    + ' ✓ means ' + (who === 'all' ? 'someone here' : players.find(p => p.id === who).name) + ' has tried it.';
+  $('lessons').innerHTML = groups.map(g => `<div class="lgrp" style="--c:${g.color}"><h3><i></i>${esc(g.title)}</h3>` +
+    g.items.map(i => { const n = count(i.id); return `<div class="lrow" title="${esc(i.name)}: opened ${n} time${n === 1 ? '' : 's'}">
+      <span class="lic" aria-hidden="true">${esc(i.icon)}</span>
+      <div><div class="lname"><span>${esc(i.name)}</span>${tried.has(i.id) ? '<b class="tick" aria-label="tried">✓</b>' : ''}</div>
+      <div class="ltrack"><i style="width:${(100 * n / max).toFixed(1)}%"></i></div></div>
+      <span class="lnum">${fmt(n)}</span></div>`; }).join('') + '</div>').join('');
+}
+
+/* Fun facts */
+function renderFun(){
+  const all = groups.flatMap(g => g.items);
+  const useCloud = cloud.ok;
+  const count = id => useCloud ? (cloud['lesson-' + id] || 0) : (T.opens[id] || 0);
+  const top = [...all].sort((a, b) => count(b.id) - count(a.id))[0];
+  const never = all.filter(i => !count(i.id));
+  const tabs = T.tabs || {}, tabNames = {learn:'📚 Learn', practice:'✏️ Practice', quiz:'🎯 Quiz', progress:'📈 Progress'};
+  const favTab = Object.keys(tabs).sort((a, b) => tabs[b] - tabs[a])[0];
+  const busy = Object.keys(T.ans).sort((a, b) => T.ans[b] - T.ans[a])[0];
+  const champ = [...players].sort((a, b) => b.mastered - a.mastered)[0];
+  const streaker = [...players].sort((a, b) => b.bestStreak - a.bestStreak)[0];
+  const ff = (em, b, s) => `<div class="ff"><span class="em" aria-hidden="true">${em}</span><div><b>${b}</b><small>${s}</small></div></div>`;
+  let h = '';
+  h += top && count(top.id) ? ff('❤️', esc(top.name), `Most loved lesson (${fmt(count(top.id))} opens)`) : ff('❤️', 'No lessons yet', 'Open a lesson in Learn');
+  h += never.length ? ff('🕵️', esc(never[0].name), `Nobody opened it yet. ${never.length} lesson${never.length > 1 ? 's' : ''} waiting!`) : ff('🎉', 'Every lesson!', 'All lessons have been opened');
+  if (favTab) h += ff('🧭', tabNames[favTab] || favTab, 'Favourite part of the app');
+  if (busy) h += ff('🐝', new Date(busy + 'T12:00').toLocaleDateString('en-GB', {weekday:'long', day:'numeric', month:'short'}), `Busiest day: ${fmt(T.ans[busy])} answers`);
+  if (champ && champ.mastered) h += ff('🧠', esc(champ.name), `Most facts mastered (${champ.mastered})`);
+  if (streaker && streaker.bestStreak) h += ff('🔥', esc(streaker.name), `Longest streak: ${streaker.bestStreak} day${streaker.bestStreak > 1 ? 's' : ''}`);
+  const q = sum(T.quiz); if (q) h += ff('🏁', `${fmt(q)} quiz${q > 1 ? 'zes' : ''}`, 'Finished on this device');
+  $('fun').innerHTML = h;
+}
+
+/* Times-table map */
+function renderMap(){
+  const list = chosen();
+  $('mapWho').textContent = who === 'all' ? (players.length > 1 ? 'Best of everyone' : players[0].name) : list[0].name;
+  let h = '<div class="h">×</div>';
+  for (let b = 1; b <= 12; b++) h += `<div class="h">${b}</div>`;
+  for (let a = 1; a <= 12; a++) {
+    h += `<div class="h">${a}</div>`;
+    for (let b = 1; b <= 12; b++) { const lv = Math.max(0, ...list.map(p => lvOf(p.facts[fk(a,b)]))); h += `<div class="v${lv}" title="${a} × ${b} = ${a * b}">${a * b}</div>`; }
+  }
+  $('map').innerHTML = h;
+}
+})();
+</script>
+</body>
+</html>
