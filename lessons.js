@@ -1,4 +1,4 @@
-/* Saif Math lessons: visual, interactive lessons up to Year 5 (and long division), plus decimals, cube numbers and clue puzzles.
+/* Saif Math lessons: visual, interactive lessons up to Year 5 (and long division), plus decimals, cube numbers, clue puzzles, odd and even, mode and median.
    Uses helpers from index.html through window.SM. */
 (() => {
 const SM = window.SM;
@@ -25,6 +25,7 @@ const GROUPS = [
     {id:'long', icon:'÷', name:'Long division', desc:'Divide, multiply, subtract, bring down', yr:'Year 5-6'}
   ]},
   {title:'Number facts', color:'#1E9E62', items:[
+    {id:'oddeven', icon:'1 2', name:'Odd and even numbers', desc:'Make pairs: is one left over?', yr:'Year 1-3'},
     {id:'multiples', icon:'#', name:'Multiples', desc:'Find them on the 100 square', yr:'Year 4-5'},
     {id:'factors', icon:'▭', name:'Factors', desc:'Factor pairs as rectangles', yr:'Year 5'},
     {id:'primes', icon:'★', name:'Prime numbers', desc:'Sieve them out step by step', yr:'Year 5'},
@@ -41,6 +42,10 @@ const GROUPS = [
     {id:'missing', icon:'?', name:'Missing numbers', desc:'Use the inverse to find ?', yr:'Year 3-5'},
     {id:'words', icon:'✎', name:'Word problems', desc:'Draw a bar model, then solve', yr:'Year 3-5'},
     {id:'clues', icon:'🔍', name:'Number clue puzzles', desc:'Use the clues to find the number', yr:'Year 5'}
+  ]},
+  {title:'Data', color:'#0E8C8C', items:[
+    {id:'mode', icon:'▥', name:'Mode', desc:'The value that appears most often', yr:'Year 5'},
+    {id:'median', icon:'↔', name:'Median', desc:'Put in order, find the middle', yr:'Year 5'}
   ]}
 ];
 const ALL = GROUPS.flatMap(g => g.items.map(it => ({...it, color:g.color, group:g.title})));
@@ -672,7 +677,8 @@ const LESSONS = {
   multiples: host => hundred(host, 'multiples'), factors: host => hundred(host, 'factors'),
   primes: host => hundred(host, 'primes'), squares: host => hundred(host, 'squares'),
   missing: host => quick(host, 'missing'), words: host => quick(host, 'words'),
-  round: lessonRound, dseq: lessonSeq, bonds: lessonBonds, dcol: lessonDcol, clues: lessonClues, cubes: lessonCubes
+  round: lessonRound, dseq: lessonSeq, bonds: lessonBonds, dcol: lessonDcol, clues: lessonClues, cubes: lessonCubes,
+  oddeven: lessonOddEven, mode: lessonMode, median: lessonMedian
 };
 
 /* =====================================================================
@@ -1266,6 +1272,166 @@ function lessonCubes(host){
       hint:`<p>${k}³ = ${k} × ${k} × ${k}. First ${k} × ${k} = ${k * k}, then × ${k}.</p>`, explain:`${k} × ${k} × ${k} = ${k ** 3}`};
     return {html:`<div class="problem small"><span class="mbox">?</span>³ = ${k ** 3}</div>`, ans:k * 1000,
       hint:`<p>Try numbers: which number × itself × itself makes ${k ** 3}? Look at the list of cube numbers above.</p>`, explain:`${k} × ${k} × ${k} = ${k ** 3}`};
+  }});
+}
+
+/* ---------- Odd and even numbers ---------- */
+function pairsHTML(n){
+  const p = Math.floor(n / 2);
+  return `<div class="oe-pairs" aria-hidden="true">${'<span class="oe-pair"><i></i><i></i></span>'.repeat(p)}${n % 2 ? '<span class="oe-pair lone"><i></i></span>' : ''}</div>`;
+}
+function lessonOddEven(host){
+  head(host, 'Odd and even numbers', 'Put the dots into <b>pairs</b>. If every dot has a partner, the number is <b>even</b>. If one dot is left on its own, the number is <b>odd</b>.');
+  let n = 7;
+  const top = h('div', 'controls'); top.appendChild(stepper('Number', n, 1, 30, v => { n = v; draw(); }, 'a'));
+  const pic = h('div', 'oe-box'), say = h('p', 'explain'), track = h('div', 'oe-track');
+  host.append(top, pic, say, track);
+  function draw(){
+    const odd = n % 2, p = Math.floor(n / 2);
+    pic.innerHTML = pairsHTML(n);
+    say.innerHTML = `<b>${n}</b> makes ${p} pair${p === 1 ? '' : 's'}${odd ? ' and <b>1 left over</b>' : ' and nothing left over'}, so ${n} is <b class="oe-tag ${odd ? 'odd' : 'even'}">${odd ? 'ODD' : 'EVEN'}</b>`;
+    track.innerHTML = Array.from({length:20}, (_, i) => `<button class="${(i + 1) % 2 ? 'odd' : 'even'}${i + 1 === n ? ' cur' : ''}" aria-label="${i + 1}">${i + 1}</button>`).join('');
+    [...track.children].forEach((b, i) => b.onclick = () => { n = i + 1; top.querySelector('.stepper').set(n); draw(); });
+    reward(0, null);
+  }
+  draw();
+  host.appendChild(h('p', 'small center', 'On the number track, odd and even take turns: odd, even, odd, even…'));
+  host.appendChild(h('div', 'tip', `<span class="t">Big numbers</span><p>Only look at the <b>ones digit</b> (the last digit). Ends in <b class="oe-tag even">0 2 4 6 8</b> → even. Ends in <b class="oe-tag odd">1 3 5 7 9</b> → odd. So 3,458 is even because it ends in 8.</p>`));
+  host.appendChild(h('div', 'tip', `<span class="t">Adding</span><p>even + even = <b>even</b> · odd + odd = <b>even</b> (the two lonely dots pair up!) · odd + even = <b>odd</b></p>`));
+  tapChallenge(host, {kind:'oddeven', title:'Challenge: odd or even?', tryMsg: n => `${n} not right yet. Look at the last digit of each number.`, showWhyOnMiss:false,
+    make(){
+      const want = pick(['odd', 'even']), seen = new Set(), items = [];
+      const mk = isOdd => { let v; do { v = pick([rnd(1, 99), rnd(1, 99), rnd(100, 999), rnd(1000, 9999)]); if ((v % 2 === 1) !== isOdd) v++; } while (seen.has(v)); seen.add(v); return v; };
+      const good = rnd(3, 5);
+      for (let i = 0; i < 8; i++){ const isOdd = (i < good) === (want === 'odd'); items.push(mk(isOdd)); }
+      const list = shuffle(items).map(v => ({v, good: (v % 2 === 1) === (want === 'odd'), label: fmt(v)}));
+      return {q:`Tap every <b>${want}</b> number.`, items:list,
+        why:'<ul>' + list.map(o => `<li>${o.label}: ends in ${o.v % 10} → ${o.v % 2 ? 'odd' : 'even'} ${o.good ? '✓' : ''}</li>`).join('') + '</ul>'};
+    }});
+  tapChallenge(host, {kind:'oddeven', title:'Challenge: which answers are even?', tryMsg: n => `${n} not right yet. Is each number odd or even? Use the adding rules.`, showWhyOnMiss:false,
+    make(){
+      const items = [], seen = new Set();
+      while (items.length < 6){
+        const a = rnd(3, 49), b = rnd(3, 49), k = a + ' + ' + b; if (seen.has(k)) continue; seen.add(k);
+        items.push({a, b, good: (a + b) % 2 === 0, label: `${a} + ${b}`});
+      }
+      if (!items.some(o => o.good) || items.every(o => o.good)) return this.make();
+      const w = v => v % 2 ? 'odd' : 'even';
+      return {q:'Tap every sum whose answer is <b>even</b>. Try it without adding them up!', items,
+        why:'<ul>' + items.map(o => `<li>${w(o.a)} + ${w(o.b)} = ${w(o.a + o.b)} (${o.a + o.b}) ${o.good ? '✓' : ''}</li>`).join('') + '</ul>'};
+    }});
+}
+
+/* ---------- Data: mode and median ---------- */
+const MODE_SETS = [
+  {what:'Dice rolls', lo:1, hi:6},
+  {what:'Goals scored in each match', lo:0, hi:5},
+  {what:'Shoe sizes of children in a class', lo:1, hi:6},
+  {what:'Number of pets each child has', lo:0, hi:4},
+  {what:'Ages of children at a party', lo:6, hi:11}
+];
+function makeModeData(len, allowTie){
+  for (let g = 0; g < 400; g++){
+    const ctx = pick(MODE_SETS), vals = Array.from({length:len}, () => rnd(ctx.lo, ctx.hi));
+    const counts = {}; vals.forEach(v => counts[v] = (counts[v] || 0) + 1);
+    const maxc = Math.max(...Object.values(counts)), modes = Object.keys(counts).filter(k => counts[k] === maxc).map(Number).sort((a, b) => a - b);
+    if (maxc < 2) continue;
+    if (!allowTie && modes.length > 1) continue;
+    if (allowTie && modes.length > 2) continue;
+    return {ctx, vals, counts, maxc, modes};
+  }
+}
+const tally = c => '<span class="st-tally">' + '<s>||||</s> '.repeat(Math.floor(c / 5)) + '|'.repeat(c % 5) + `</span> <small>(${c})</small>`;
+function lessonMode(host){
+  head(host, 'Mode', 'The <b>mode</b> is the value that appears <b>most often</b>. Sort the data into piles: the tallest pile is the mode.');
+  const top = h('div', 'controls'), raw = h('div', 'y5-chips'), chart = h('div', 'st-chart'), say = h('p', 'explain'), row = h('div', 'row');
+  row.style.justifyContent = 'center';
+  const title = h('p', 'explain');
+  host.append(top, title, raw, row, chart, say);
+  let P, sorted = false;
+  const sortB = btn('Sort into piles', '', () => { sorted = true; draw(); });
+  row.append(sortB, btn('New data', 'ghost', start));
+  function start(){ P = makeModeData(rnd(9, 12), rnd(0, 3) === 0); sorted = false; draw(); }
+  function draw(){
+    title.innerHTML = `<b>${P.ctx.what}</b>`;
+    raw.innerHTML = P.vals.map(v => `<span class="y5-chip${sorted && P.modes.includes(v) ? ' ok' : ''}">${v}</span>`).join('');
+    sortB.disabled = sorted;
+    if (!sorted){ chart.innerHTML = ''; say.innerHTML = 'Which number do you think appears most often? Tap <b>Sort into piles</b> to check.'; return; }
+    let s = '', k = 0;
+    for (let v = P.ctx.lo; v <= P.ctx.hi; v++){
+      const c = P.counts[v] || 0, top = P.modes.includes(v);
+      s += `<div class="st-col${top ? ' top' : ''}"><small>${c}</small><div class="st-stack">${Array.from({length:c}, () => `<i style="animation-delay:${(k++) * 60}ms"></i>`).join('')}</div><b>${v}</b></div>`;
+    }
+    chart.innerHTML = s;
+    say.innerHTML = P.modes.length === 1
+      ? `<b>${P.modes[0]}</b> appears <b>${P.maxc} times</b>, more than any other value. The mode is <b>${P.modes[0]}</b>.`
+      : `<b>${P.modes[0]}</b> and <b>${P.modes[1]}</b> both appear ${P.maxc} times. It is a tie, so this data has <b>two modes</b>: ${P.modes[0]} and ${P.modes[1]}.`;
+    reward(0, null);
+  }
+  start();
+  host.appendChild(h('div', 'tip', `<span class="t">Remember</span><p><b>Mo</b>de = <b>mo</b>st. The mode is a value from the data, not how many times it appears. If no value appears more than once, there is <b>no mode</b>.</p>`));
+  dquiz(host, {kind:'mode', levels:[['short','Short lists'],['long','Longer lists']], make(level){
+    const D0 = makeModeData(level === 'short' ? rnd(6, 8) : rnd(11, 14), false), m = D0.modes[0];
+    const keys = []; for (let v = D0.ctx.lo; v <= D0.ctx.hi; v++) if (D0.counts[v]) keys.push(v);
+    return {html:`<p><b>${D0.ctx.what}:</b></p><div class="y5-chips">${D0.vals.map(v => `<span class="y5-chip">${v}</span>`).join('')}</div><p>What is the mode?</p>`,
+      label:'Mode', ans:m * 1000,
+      hint:`<p>Make a tally. Count how many times each value appears:</p><table class="st-tab">${keys.map(v => `<tr><td>${v}</td><td>${tally(D0.counts[v])}</td></tr>`).join('')}</table>`,
+      explain:`${m} appears ${D0.maxc} times, more than any other value.`};
+  }});
+}
+
+const MED_SETS = ['Heights of sunflowers (cm)', 'Minutes spent reading', 'Points scored in a game', 'Number of steps to the door'];
+function lessonMedian(host){
+  head(host, 'Median', 'The <b>median</b> is the <b>middle</b> value. First put the data <b>in order</b>, smallest to largest. Then cross off one from each end until you reach the middle.');
+  const S = SM.S(); S.glevel = S.glevel || {}; let kind = S.glevel.medianx || 'odd';
+  const top = h('div', 'controls');
+  top.appendChild(seg([['odd','Odd amount of data'],['even','Even amount of data']], kind, v => { kind = v; S.glevel.medianx = v; SM.save(); start(); }));
+  const title = h('p', 'explain'), stage = h('div', 'md-stage'), say = h('p', 'explain'), row = h('div', 'row');
+  row.style.justifyContent = 'center';
+  host.append(top, title, stage, say, row);
+  let vals, order, crossed, maxX, bars;
+  const orderB = btn('Put in order', '', () => { order = vals.map((v, i) => i).sort((a, b) => vals[a] - vals[b] || a - b); place(); }),
+        crossB = btn('Cross off ends', '', () => { if (crossed < maxX) { crossed++; place(); } });
+  row.append(orderB, crossB, btn('New data', 'ghost', start));
+  function start(){
+    const n = kind === 'odd' ? pick([5, 7, 7, 9]) : pick([4, 6, 6, 8]);
+    vals = Array.from({length:n}, () => rnd(2, 20)); order = null; crossed = 0; maxX = Math.floor((n - 1) / 2);
+    title.innerHTML = `<b>${pick(MED_SETS)}</b>`;
+    stage.innerHTML = ''; const mx = Math.max(...vals);
+    bars = vals.map(v => { const b = h('div', 'md-bar', `<span style="height:${Math.round(18 + 112 * v / mx)}px"></span><b>${v}</b>`); b.style.width = (100 / n) + '%'; stage.appendChild(b); return b; });
+    place();
+  }
+  function place(){
+    const n = vals.length;
+    const rank = new Array(n); if (order) order.forEach((idx, k) => rank[idx] = k); else vals.forEach((_, i) => rank[i] = i);
+    bars.forEach((b, i) => {
+      const k = rank[i]; b.style.left = (k * 100 / n) + '%';
+      const isX = order && (k < crossed || k >= n - crossed);
+      const mid = order && crossed === maxX && !isX;
+      b.classList.toggle('x', !!isX); b.classList.toggle('mid', !!mid);
+    });
+    orderB.disabled = !!order; crossB.disabled = !order || crossed >= maxX;
+    if (!order){ say.innerHTML = 'The data is all mixed up. Tap <b>Put in order</b>.'; return; }
+    const s = order.map(i => vals[i]);
+    if (crossed < maxX){ say.innerHTML = `In order: ${s.join(', ')}.<br>Now tap <b>Cross off ends</b> to cross off the smallest and largest.`; return; }
+    if (n % 2){ say.innerHTML = `Only one value is left in the middle. The median is <b>${s[maxX]}</b>.`; }
+    else {
+      const a = s[maxX], b = s[maxX + 1], m = (a + b) / 2;
+      say.innerHTML = a === b ? `Two values are left in the middle, and both are ${a}. The median is <b>${a}</b>.`
+        : `Two values are left in the middle: ${a} and ${b}. The median is halfway between them: (${a} + ${b}) ÷ 2 = <b>${m}</b>.`;
+    }
+    reward(0, null);
+  }
+  start();
+  host.appendChild(h('div', 'tip', `<span class="t">Remember</span><p><b>Med</b>ian sounds like <b>med</b>ium, the one in the middle. With an <b>even</b> amount of data there are two middle values, so find the number halfway between them.</p>`));
+  dquiz(host, {kind:'median', levels:[['odd','Odd amount'],['even','Even amount']], make(level){
+    const n = level === 'odd' ? pick([5, 7, 9]) : pick([4, 6, 8]), v = Array.from({length:n}, () => rnd(1, 30));
+    const s = [...v].sort((a, b) => a - b), i = Math.floor((n - 1) / 2), m = n % 2 ? s[i] : (s[i] + s[i + 1]) / 2;
+    const midHTML = s.map((x, k) => (k === i || (n % 2 === 0 && k === i + 1)) ? `<b>${x}</b>` : x).join(', ');
+    return {html:`<div class="y5-chips">${v.map(x => `<span class="y5-chip">${x}</span>`).join('')}</div><p>What is the median?</p>`,
+      label:'Median', ans:Math.round(m * 1000),
+      hint:`<p>Put them in order: ${s.join(', ')}.</p><p>There are ${n} numbers. Cross off one from each end until ${n % 2 ? 'one is' : 'two are'} left.${n % 2 ? '' : ' Then find the number halfway between those two.'}</p>`,
+      explain: n % 2 ? `In order: ${midHTML}. The middle value is ${m}.` : s[i] === s[i + 1] ? `In order: ${midHTML}. Both middle values are ${m}, so the median is ${m}.` : `In order: ${midHTML}. Halfway between ${s[i]} and ${s[i + 1]} is ${m}.`};
   }});
 }
 

@@ -447,6 +447,36 @@ button.y5-chip[aria-pressed="true"]{border-color:var(--bad);box-shadow:0 0 0 3px
 .y5-c{stroke:var(--card);stroke-width:1}
 .y5-c.a.top{fill:#7FB3F5} .y5-c.a.lf{fill:#1C6FD1} .y5-c.a.rt{fill:#3E8BE6}
 .y5-c.b.top{fill:#FFD27A} .y5-c.b.lf{fill:#E08A00} .y5-c.b.rt{fill:#F5A623}
+.oe-box{display:flex;justify-content:center}
+.oe-pairs{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:460px}
+.oe-pair{display:flex;flex-direction:column;gap:4px;padding:5px;border:2px solid var(--line);border-radius:12px;background:var(--paper)}
+.oe-pair i{width:20px;height:20px;border-radius:50%;background:var(--dot-a)}
+.oe-pair.lone{border-color:var(--dot-b);border-style:dashed;justify-content:flex-start}
+.oe-pair.lone i{background:var(--dot-b)}
+.oe-tag{border-radius:8px;padding:0 8px;white-space:nowrap}
+.oe-tag.even{background:var(--dot-a);color:var(--accent-ink)} .oe-tag.odd{background:var(--dot-b);color:#1d1300}
+.oe-track{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;max-width:460px;width:100%;margin:0 auto}
+.oe-track button{border:2px solid transparent;border-radius:8px;padding:6px 0;font-family:var(--display);font-weight:600;font-size:17px;color:var(--ink)}
+.oe-track .even{background:color-mix(in srgb,var(--dot-a) 22%,var(--card))} .oe-track .odd{background:color-mix(in srgb,var(--dot-b) 26%,var(--card))}
+.oe-track .cur{border-color:var(--ink);transform:scale(1.08)}
+.st-chart{display:flex;justify-content:center;align-items:flex-end;gap:10px;min-height:20px;flex-wrap:wrap}
+.st-col{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:40px}
+.st-col small{font-weight:800;color:var(--muted)}
+.st-col b{font-family:var(--display);font-size:22px;border-top:3px solid var(--ink);width:100%;text-align:center}
+.st-stack{display:flex;flex-direction:column-reverse;gap:3px}
+.st-stack i{width:34px;height:22px;border-radius:6px;background:var(--dot-a);animation:stpop .3s both}
+.st-col.top .st-stack i{background:var(--good)} .st-col.top small{color:var(--good)}
+@keyframes stpop{from{transform:scale(0);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.st-stack i{animation:none}.md-bar{transition:none!important}}
+.st-tab{margin:6px auto;border-collapse:collapse;font-size:18px}
+.st-tab td{border:1px solid var(--line);padding:2px 12px}
+.st-tally{font-family:var(--display);letter-spacing:2px;font-weight:700}
+.md-stage{position:relative;height:170px;max-width:520px;width:100%;margin:0 auto;border-bottom:3px solid var(--ink)}
+.md-bar{position:absolute;bottom:0;display:flex;flex-direction:column-reverse;align-items:center;gap:2px;transition:left .7s ease,opacity .3s}
+.md-bar span{width:70%;max-width:44px;border-radius:8px 8px 0 0;background:var(--dot-a)}
+.md-bar b{font-family:var(--display);font-size:20px}
+.md-bar.x{opacity:.25} .md-bar.x b{text-decoration:line-through}
+.md-bar.mid span{background:var(--good)} .md-bar.mid b{color:var(--good);font-size:24px}
 </style>
 </head>
 <body>
@@ -1121,6 +1151,6 @@ if (startView) show(startView);
 addEventListener('resize', () => { if (!$('lsn-groups').hidden) drawArray($('lArray'), la, lb, {}); });
 })();
 </script>
-<script src="lessons.js?v=4"></script>
+<script src="lessons.js?v=5"></script>
 </body>
 </html>
